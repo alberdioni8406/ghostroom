@@ -39,7 +39,6 @@
       position: relative;
     }
 
-    /* Floating fog particles */
     body::before {
       content: "";
       position: fixed;
@@ -265,12 +264,12 @@
       gap: 0.22rem;
       max-width: 88%;
       opacity: 0;
-      transform: translateY(8px) scale(0.98);
-      animation: materialize 0.5s ease forwards;
+      transform: translateY(6px);
+      animation: materialize 0.45s ease forwards;
     }
 
     @keyframes materialize {
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .msg .meta {
@@ -319,21 +318,26 @@
       padding: 0.3rem 0.8rem;
     }
 
+    /* Silent disappear — only opacity, no scale or shake */
     .msg.fading {
-      transition: opacity 1.4s ease, transform 1.4s ease;
-      opacity: 0.15;
-      transform: scale(0.96);
+      transition: opacity 1.6s ease;
+      opacity: 0;
     }
 
     .typing {
       font-size: 0.72rem;
       color: var(--muted);
       font-style: italic;
-      padding: 0 0.3rem 0.4rem;
+      padding: 0 0.3rem 0.5rem 1.2rem;
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity 0.25s;
+      height: 0;
+      overflow: hidden;
     }
-    .typing.visible { opacity: 1; }
+    .typing.visible {
+      opacity: 1;
+      height: auto;
+    }
 
     .compose {
       border-top: 1px solid var(--border);
@@ -547,7 +551,9 @@
     let messageStore = [];
     let messageEls = new Map();
     let activeGhosts = new Set();
-    let typingTimeout = null;
+    let lastTypingSent = 0;
+    let myTypingIds = new Set();
+    let typingClearTimer = null;
     let lastWhisper = 0;
 
     const $ = id => document.getElementById(id);
@@ -640,8 +646,6 @@
       subscribeRoom(code);
       setStatus("in room " + code, true);
       setTimeout(() => msgInput.focus(), 100);
-
-      // occasional ambient whisper
       scheduleWhisper();
     }
 
@@ -668,9 +672,17 @@
         kinds: [1],
         "#t": ["ghostroom"],
         "#r": [code],
-        limit: 40
+        limit: 50
       }], {
         onevent(ev) {
+          // Typing signal — ONLY show if it comes from someone else
+          if (ev.content === "…" && ev.tags.some(t => t[0] === "typing")) {
+            // Never show our own typing indicator
+            if (ev.pubkey === pk || myTypingIds.has(ev.id)) return;
+            showTypingFromOther();
+            return;
+          }
+
           if (seen.has(ev.id) || isExpired(ev.created_at)) return;
           seen.add(ev.id);
           messageStore.push(ev);
@@ -679,6 +691,40 @@
           renderAll();
         }
       });
+    }
+
+    // Send a very short-lived typing signal (only others will see it)
+    async function sendTypingSignal() {
+      if (!currentRoom || !sk) return;
+      const now = Date.now();
+      if (now - lastTypingSent < 2500) return; // rate limit
+      lastTypingSent = now;
+
+      const event = finalizeEvent({
+        kind: 1,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ["t", "ghostroom"],
+          ["r", currentRoom],
+          ["typing", "1"]
+        ],
+        content: "…"
+      }, sk);
+
+      try {
+        myTypingIds.add(event.id);
+        // clean old ids after a few seconds
+        setTimeout(() => myTypingIds.delete(event.id), 5000);
+        await Promise.any(pool.publish(RELAYS, event));
+      } catch (e) {}
+    }
+
+    function showTypingFromOther() {
+      typingEl.classList.add("visible");
+      clearTimeout(typingClearTimer);
+      typingClearTimer = setTimeout(() => {
+        typingEl.classList.remove("visible");
+      }, 2800);
     }
 
     async function sendMessage(text) {
@@ -743,11 +789,11 @@
 
     function scheduleWhisper() {
       if (!currentRoom) return;
-      const delay = 45000 + Math.random() * 90000; // 45–135s
+      const delay = 50000 + Math.random() * 100000;
       setTimeout(() => {
         if (!currentRoom) return;
         const now = Date.now();
-        if (now - lastWhisper > 40000) {
+        if (now - lastWhisper > 45000) {
           const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
           addSystemWhisper(w);
           lastWhisper = now;
@@ -759,30 +805,35 @@
     function sweep() {
       const now = Math.floor(Date.now() / 1000);
       let changed = false;
-      messageStore = messageStore.filter(ev => {
-        if (now - ev.created_at > EXPIRE_AFTER) { changed = true; return false; }
-        return true;
-      });
-      for (const [id, el] of messageEls) {
+
+      // Silent fade then remove
+      for (const [id, el] of [...messageEls]) {
         const age = now - parseInt(el.dataset.created, 10);
         if (age > EXPIRE_AFTER) {
+          // already fully transparent → remove
           el.remove();
           messageEls.delete(id);
           seen.delete(id);
-        } else if (age > EXPIRE_AFTER - 20) {
+          changed = true;
+        } else if (age > EXPIRE_AFTER - 12) {
+          // last 12 seconds → silent fade only
           el.classList.add("fading");
         }
       }
-      if (changed) renderAll();
-    }
-    setInterval(sweep, 10000);
 
-    // Typing indicator (local only for now)
+      messageStore = messageStore.filter(ev => now - ev.created_at <= EXPIRE_AFTER);
+
+      if (changed) {
+        // no full re-render needed, we already removed
+      }
+    }
+    setInterval(sweep, 4000);
+
+    // Typing: only send signal to others. Never show the indicator on our own screen.
     msgInput.addEventListener("input", () => {
       if (!currentRoom) return;
-      typingEl.classList.add("visible");
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => typingEl.classList.remove("visible"), 1800);
+      // IMPORTANT: do NOT call typingEl.classList.add here
+      sendTypingSignal();
     });
 
     $("btnCreate").onclick = () => enterRoom(randomRoomCode());
