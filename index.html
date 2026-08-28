@@ -6,17 +6,18 @@
   <title>Ghostroom — Enter as a ghost. Leave no trace.</title>
   <style>
     :root {
-      --bg: #050508;
-      --surface: #0c0c12;
-      --surface2: #111118;
-      --border: #1a1a24;
+      --bg: #030306;
+      --surface: #0a0a10;
+      --surface2: #0f0f16;
+      --border: #1a1a26;
       --text: #f0f0f8;
-      --muted: #7a7a90;
+      --muted: #6e6e86;
       --accent: #8b6cff;
-      --accent-glow: rgba(139, 108, 255, 0.45);
-      --ghost: #c0c0d8;
+      --accent-glow: rgba(139, 108, 255, 0.4);
+      --ghost: #b8b8d0;
       --success: #3ecf8e;
-      --input-bg: #0e0e16;
+      --input-bg: #0c0c14;
+      --whisper: #5a5a78;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,22 +39,27 @@
       position: relative;
     }
 
+    /* Floating fog particles */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       background-image:
-        radial-gradient(1.5px 1.5px at 20% 30%, rgba(139,108,255,0.2) 50%, transparent 50%),
-        radial-gradient(1px 1px at 70% 60%, rgba(160,160,200,0.12) 50%, transparent 50%),
-        radial-gradient(1.2px 1.2px at 40% 80%, rgba(139,108,255,0.1) 50%, transparent 50%);
+        radial-gradient(1.8px 1.8px at 15% 25%, rgba(139,108,255,0.18) 50%, transparent 50%),
+        radial-gradient(1.2px 1.2px at 75% 55%, rgba(180,180,220,0.12) 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 45% 80%, rgba(139,108,255,0.1) 50%, transparent 50%),
+        radial-gradient(1px 1px at 90% 15%, rgba(200,200,230,0.08) 50%, transparent 50%),
+        radial-gradient(1.3px 1.3px at 30% 60%, rgba(139,108,255,0.14) 50%, transparent 50%),
+        radial-gradient(1px 1px at 60% 35%, rgba(160,160,200,0.1) 50%, transparent 50%);
       pointer-events: none;
       z-index: 0;
-      animation: drift 50s linear infinite;
+      animation: drift 55s linear infinite;
     }
 
     @keyframes drift {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-20px); }
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-18px) translateX(6px); }
+      100% { transform: translateY(0) translateX(0); }
     }
 
     header {
@@ -64,8 +70,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(12, 12, 18, 0.9);
-      backdrop-filter: blur(12px);
+      background: rgba(8, 8, 14, 0.92);
+      backdrop-filter: blur(14px);
     }
 
     .logo {
@@ -73,7 +79,7 @@
       font-weight: 700;
       letter-spacing: -0.5px;
       color: var(--text);
-      text-shadow: 0 0 20px var(--accent-glow);
+      text-shadow: 0 0 22px var(--accent-glow);
     }
     .logo span { color: var(--accent); }
 
@@ -114,14 +120,14 @@
     }
 
     .panel {
-      background: rgba(12, 12, 18, 0.8);
+      background: rgba(10, 10, 16, 0.82);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.15rem;
       display: flex;
       flex-direction: column;
       gap: 0.95rem;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
     }
 
     .panel h2 {
@@ -149,7 +155,7 @@
     }
 
     input[type="text"]::placeholder {
-      color: #707088 !important;
+      color: #686880 !important;
       opacity: 1;
     }
 
@@ -196,15 +202,15 @@
     }
 
     .room-code {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       text-align: center;
       color: var(--accent);
       padding: 0.75rem;
       background: var(--bg);
       border-radius: 10px;
-      border: 1px dashed rgba(139,108,255,0.35);
+      border: 1px dashed rgba(139,108,255,0.4);
       text-shadow: 0 0 16px var(--accent-glow);
     }
 
@@ -219,6 +225,13 @@
       line-height: 1.45;
     }
 
+    .ghost-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0.4rem;
+    }
+
     .expire-note {
       font-size: 0.68rem;
       color: var(--muted);
@@ -229,12 +242,12 @@
     .chat {
       display: flex;
       flex-direction: column;
-      background: rgba(12, 12, 18, 0.8);
+      background: rgba(10, 10, 16, 0.82);
       border: 1px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
       min-height: 480px;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
     }
 
     .messages {
@@ -252,12 +265,12 @@
       gap: 0.22rem;
       max-width: 88%;
       opacity: 0;
-      transform: translateY(6px);
-      animation: ghostIn 0.35s ease forwards;
+      transform: translateY(8px) scale(0.98);
+      animation: materialize 0.5s ease forwards;
     }
 
-    @keyframes ghostIn {
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes materialize {
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .msg .meta {
@@ -291,12 +304,37 @@
       background: rgba(139, 108, 255, 0.11);
     }
 
-    .msg.fading {
-      transition: opacity 1s ease;
-      opacity: 0.2;
+    .msg.system {
+      align-self: center;
+      max-width: 95%;
+      opacity: 0.7;
+    }
+    .msg.system .body {
+      background: transparent;
+      border: none;
+      color: var(--whisper);
+      font-size: 0.78rem;
+      font-style: italic;
+      text-align: center;
+      padding: 0.3rem 0.8rem;
     }
 
-    /* FIXED compose layout - input large, Send compact */
+    .msg.fading {
+      transition: opacity 1.4s ease, transform 1.4s ease;
+      opacity: 0.15;
+      transform: scale(0.96);
+    }
+
+    .typing {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-style: italic;
+      padding: 0 0.3rem 0.4rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .typing.visible { opacity: 1; }
+
     .compose {
       border-top: 1px solid var(--border);
       padding: 0.9rem 1rem;
@@ -304,7 +342,7 @@
       flex-direction: row;
       align-items: stretch;
       gap: 0.7rem;
-      background: rgba(8, 8, 14, 0.7);
+      background: rgba(6, 6, 12, 0.75);
     }
 
     .compose input {
@@ -355,13 +393,13 @@
       gap: 0.4rem;
     }
     .empty .big {
-      font-size: 1.8rem;
-      opacity: 0.28;
+      font-size: 1.9rem;
+      opacity: 0.25;
     }
 
     .footer-panel {
       grid-column: 1 / -1;
-      background: rgba(12, 12, 18, 0.8);
+      background: rgba(10, 10, 16, 0.82);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.4rem;
@@ -417,7 +455,7 @@
         <h2>Create or join a room</h2>
         <button id="btnCreate">Create new room</button>
         <div style="height:0.5rem"></div>
-        <input type="text" id="joinCode" placeholder="Enter room code" maxlength="8" autocomplete="off" spellcheck="false" />
+        <input type="text" id="joinCode" placeholder="Enter room code" maxlength="12" autocomplete="off" spellcheck="false" />
         <div style="height:0.4rem"></div>
         <button class="secondary" id="btnJoin">Join room</button>
       </div>
@@ -425,12 +463,13 @@
       <div id="inRoom" class="hidden">
         <h2>Current room</h2>
         <div class="room-code" id="currentCode">————</div>
-        <div style="height:0.5rem"></div>
+        <div class="ghost-count" id="ghostCount">1 ghost present</div>
+        <div style="height:0.45rem"></div>
         <button class="secondary" id="btnLeave">Leave room</button>
-        <div style="height:0.4rem"></div>
+        <div style="height:0.35rem"></div>
         <button class="secondary" id="btnCopyLink">Copy invite link</button>
-        <div style="height:0.65rem"></div>
-        <p class="expire-note">Messages vanish after 1 minute.<br>Nothing is meant to last.</p>
+        <div style="height:0.6rem"></div>
+        <p class="expire-note">Messages vanish after 5 minutes.<br>Rooms fade when empty.</p>
       </div>
     </div>
 
@@ -442,6 +481,7 @@
           Everyone here is a ghost.
         </div>
       </div>
+      <div class="typing" id="typingIndicator">A ghost is writing…</div>
       <div class="compose">
         <input type="text" id="msgInput" placeholder="Speak as a ghost…" disabled maxlength="1000" autocomplete="off" />
         <button id="btnSend" disabled>Send</button>
@@ -451,7 +491,7 @@
     <div class="footer-panel">
       <strong>Ghostroom</strong> — Enter as a ghost. Leave no trace.<br><br>
       No accounts. No profiles. No permanent keys. Every session is a fresh disposable identity that dies when you close the tab. Only the founder is publicly known. Everyone else stays invisible by design.<br><br>
-      Pure HTML. No backend. No company. Just Nostr relays and temporary rooms anyone can create and share. Messages auto-expire after 1 minute so nothing is meant to last.
+      Pure HTML. No backend. No company. Just Nostr relays and temporary rooms anyone can create and share. Messages auto-expire after 5 minutes so nothing is meant to last.
 
       <div class="donate">
         <strong>Support the founder</strong><br>
@@ -477,7 +517,18 @@
       "wss://relay.primal.net"
     ];
 
-    const EXPIRE_AFTER = 60; // 1 minute
+    const EXPIRE_AFTER = 5 * 60; // 5 minutes
+
+    const WHISPERS = [
+      "A cold wind passes through the room…",
+      "Something just faded into the dark.",
+      "You feel a presence nearby.",
+      "The silence grows heavier.",
+      "A shadow moves at the edge of vision.",
+      "Someone was here… and is gone.",
+      "The air feels thinner for a moment.",
+      "A distant echo dies away."
+    ];
 
     const ADJECTIVES = [
       "Silent","Null","Zero","Dark","Neon","Cipher","Ghost","Shadow",
@@ -495,18 +546,22 @@
     let ghostMap = new Map();
     let messageStore = [];
     let messageEls = new Map();
+    let activeGhosts = new Set();
+    let typingTimeout = null;
+    let lastWhisper = 0;
 
     const $ = id => document.getElementById(id);
     const statusDot = $("statusDot"), statusText = $("statusText");
     const ghostIdEl = $("ghostId"), lobby = $("lobby"), inRoom = $("inRoom");
     const currentCode = $("currentCode"), messagesEl = $("messages");
     const emptyState = $("emptyState"), msgInput = $("msgInput"), btnSend = $("btnSend");
+    const ghostCountEl = $("ghostCount"), typingEl = $("typingIndicator");
 
     function randomRoomCode() {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let c = "";
-      for (let i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
-      return c;
+      for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
+      return "GHOST-" + c;
     }
 
     function coolGhostName(pubkey) {
@@ -539,6 +594,11 @@
       return (Math.floor(Date.now() / 1000) - ts) > EXPIRE_AFTER;
     }
 
+    function updateGhostCount() {
+      const n = activeGhosts.size || 1;
+      ghostCountEl.textContent = n === 1 ? "1 ghost present" : n + " ghosts present";
+    }
+
     function initIdentity() {
       sk = generateSecretKey();
       pk = getPublicKey(sk);
@@ -569,14 +629,20 @@
       ghostMap.clear();
       messageStore = [];
       messageEls.clear();
+      activeGhosts.clear();
+      activeGhosts.add(pk);
 
       coolGhostName(pk);
       ghostIdEl.innerHTML = ghostMap.get(pk) + '<br><span style="font-size:0.7rem;opacity:0.7">' + pk.slice(0,8) + '…</span>';
+      updateGhostCount();
 
       updateURL(code);
       subscribeRoom(code);
       setStatus("in room " + code, true);
       setTimeout(() => msgInput.focus(), 100);
+
+      // occasional ambient whisper
+      scheduleWhisper();
     }
 
     function leaveRoom(ui = true) {
@@ -592,6 +658,7 @@
         messagesEl.appendChild(emptyState);
         updateURL(null);
         setStatus("ready · " + RELAYS.length + " relays", true);
+        typingEl.classList.remove("visible");
       }
     }
 
@@ -601,12 +668,14 @@
         kinds: [1],
         "#t": ["ghostroom"],
         "#r": [code],
-        limit: 50
+        limit: 40
       }], {
         onevent(ev) {
           if (seen.has(ev.id) || isExpired(ev.created_at)) return;
           seen.add(ev.id);
           messageStore.push(ev);
+          activeGhosts.add(ev.pubkey);
+          updateGhostCount();
           renderAll();
         }
       });
@@ -626,10 +695,13 @@
         if (!seen.has(event.id)) {
           seen.add(event.id);
           messageStore.push(event);
+          activeGhosts.add(pk);
+          updateGhostCount();
           renderAll();
         }
         msgInput.value = "";
         msgInput.focus();
+        typingEl.classList.remove("visible");
       } catch (e) {
         console.error(e);
         alert("Failed to send. Relays may be unreachable.");
@@ -660,6 +732,30 @@
       messageEls.set(ev.id, div);
     }
 
+    function addSystemWhisper(text) {
+      const div = document.createElement("div");
+      div.className = "msg system";
+      div.innerHTML = '<div class="body"></div>';
+      div.querySelector(".body").textContent = text;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function scheduleWhisper() {
+      if (!currentRoom) return;
+      const delay = 45000 + Math.random() * 90000; // 45–135s
+      setTimeout(() => {
+        if (!currentRoom) return;
+        const now = Date.now();
+        if (now - lastWhisper > 40000) {
+          const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+          addSystemWhisper(w);
+          lastWhisper = now;
+        }
+        scheduleWhisper();
+      }, delay);
+    }
+
     function sweep() {
       const now = Math.floor(Date.now() / 1000);
       let changed = false;
@@ -673,13 +769,21 @@
           el.remove();
           messageEls.delete(id);
           seen.delete(id);
-        } else if (age > EXPIRE_AFTER - 15) {
+        } else if (age > EXPIRE_AFTER - 20) {
           el.classList.add("fading");
         }
       }
       if (changed) renderAll();
     }
-    setInterval(sweep, 8000);
+    setInterval(sweep, 10000);
+
+    // Typing indicator (local only for now)
+    msgInput.addEventListener("input", () => {
+      if (!currentRoom) return;
+      typingEl.classList.add("visible");
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => typingEl.classList.remove("visible"), 1800);
+    });
 
     $("btnCreate").onclick = () => enterRoom(randomRoomCode());
     $("btnJoin").onclick = () => enterRoom($("joinCode").value);
