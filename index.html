@@ -10,13 +10,13 @@
       --surface: #0c0c12;
       --surface2: #111118;
       --border: #1a1a24;
-      --text: #e4e4f0;
+      --text: #e8e8f2;
       --muted: #6e6e82;
       --accent: #8b6cff;
-      --accent-glow: rgba(139, 108, 255, 0.35);
-      --ghost: #9a9ab0;
+      --accent-glow: rgba(139, 108, 255, 0.4);
+      --ghost: #b0b0c8;
       --success: #3ecf8e;
-      --fade: rgba(5, 5, 8, 0.7);
+      --input-bg: #0a0a10;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,30 +33,25 @@
       position: relative;
     }
 
-    /* Subtle floating particles atmosphere */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       background-image:
-        radial-gradient(1.5px 1.5px at 20% 30%, rgba(139,108,255,0.25) 50%, transparent 50%),
-        radial-gradient(1px 1px at 70% 60%, rgba(160,160,200,0.18) 50%, transparent 50%),
-        radial-gradient(1.2px 1.2px at 40% 80%, rgba(139,108,255,0.15) 50%, transparent 50%),
-        radial-gradient(1px 1px at 85% 20%, rgba(180,180,220,0.12) 50%, transparent 50%),
-        radial-gradient(1.5px 1.5px at 10% 70%, rgba(139,108,255,0.2) 50%, transparent 50%);
-      background-size: 100% 100%;
+        radial-gradient(1.5px 1.5px at 20% 30%, rgba(139,108,255,0.22) 50%, transparent 50%),
+        radial-gradient(1px 1px at 70% 60%, rgba(160,160,200,0.15) 50%, transparent 50%),
+        radial-gradient(1.2px 1.2px at 40% 80%, rgba(139,108,255,0.12) 50%, transparent 50%),
+        radial-gradient(1px 1px at 85% 20%, rgba(180,180,220,0.1) 50%, transparent 50%);
       pointer-events: none;
       z-index: 0;
-      animation: drift 40s linear infinite;
+      animation: drift 45s linear infinite;
     }
 
     @keyframes drift {
-      0% { transform: translateY(0); opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { transform: translateY(-30px); opacity: 0.7; }
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-25px); }
     }
 
-    /* Header */
     header {
       position: relative;
       z-index: 10;
@@ -65,7 +60,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(12, 12, 18, 0.85);
+      background: rgba(12, 12, 18, 0.88);
       backdrop-filter: blur(12px);
     }
 
@@ -74,7 +69,7 @@
       font-weight: 700;
       letter-spacing: -0.5px;
       color: var(--text);
-      text-shadow: 0 0 20px var(--accent-glow);
+      text-shadow: 0 0 22px var(--accent-glow);
     }
     .logo span { color: var(--accent); }
 
@@ -98,7 +93,6 @@
       box-shadow: 0 0 10px var(--success);
     }
 
-    /* Main */
     main {
       position: relative;
       z-index: 5;
@@ -116,9 +110,8 @@
       main { grid-template-columns: 270px 1fr; }
     }
 
-    /* Panels */
     .panel {
-      background: rgba(12, 12, 18, 0.75);
+      background: rgba(12, 12, 18, 0.78);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.2rem;
@@ -126,7 +119,7 @@
       flex-direction: column;
       gap: 1rem;
       backdrop-filter: blur(8px);
-      box-shadow: 0 0 40px rgba(0,0,0,0.4);
+      box-shadow: 0 0 40px rgba(0,0,0,0.45);
     }
 
     .panel h2 {
@@ -137,17 +130,24 @@
       margin-bottom: 0.15rem;
     }
 
-    input[type="text"], button {
+    input[type="text"] {
       font-family: inherit;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       border-radius: 9px;
       border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      padding: 0.72rem 1rem;
+      background: var(--input-bg) !important;
+      color: #ffffff !important;          /* force high contrast */
+      -webkit-text-fill-color: #ffffff !important;
+      caret-color: var(--accent);
+      padding: 0.75rem 1rem;
       width: 100%;
       outline: none;
       transition: all 0.2s;
+    }
+
+    input[type="text"]::placeholder {
+      color: #6a6a80 !important;
+      opacity: 1;
     }
 
     input[type="text"]:focus {
@@ -155,13 +155,24 @@
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
+    input[type="text"]:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     button {
-      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.88rem;
+      border-radius: 9px;
+      border: 1px solid var(--accent);
       background: var(--accent);
-      border-color: var(--accent);
       color: #fff;
+      padding: 0.72rem 1rem;
+      width: 100%;
+      cursor: pointer;
       font-weight: 600;
       letter-spacing: 0.3px;
+      transition: all 0.2s;
     }
     button:hover {
       background: #7a5cf0;
@@ -198,13 +209,14 @@
     }
 
     .ghost-id {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--ghost);
       text-align: center;
-      padding: 0.55rem;
+      padding: 0.6rem;
       background: var(--bg);
       border-radius: 8px;
       border: 1px solid var(--border);
+      line-height: 1.4;
     }
 
     .expire-note {
@@ -214,11 +226,10 @@
       line-height: 1.4;
     }
 
-    /* Chat */
     .chat {
       display: flex;
       flex-direction: column;
-      background: rgba(12, 12, 18, 0.75);
+      background: rgba(12, 12, 18, 0.78);
       border: 1px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
@@ -244,7 +255,7 @@
       max-width: 88%;
       opacity: 0;
       transform: translateY(8px);
-      animation: ghostIn 0.45s ease forwards;
+      animation: ghostIn 0.4s ease forwards;
     }
 
     @keyframes ghostIn {
@@ -252,7 +263,7 @@
     }
 
     .msg .meta {
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       color: var(--muted);
       display: flex;
       gap: 0.7rem;
@@ -262,7 +273,7 @@
     .msg .name {
       color: var(--ghost);
       font-weight: 600;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
 
     .msg .body {
@@ -272,6 +283,8 @@
       border: 1px solid var(--border);
       word-break: break-word;
       white-space: pre-wrap;
+      direction: ltr;                 /* force left-to-right */
+      unicode-bidi: embed;
       box-shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
 
@@ -280,14 +293,14 @@
     }
     .msg.mine .meta { justify-content: flex-end; }
     .msg.mine .body {
-      border-color: rgba(139,108,255,0.45);
-      background: rgba(139, 108, 255, 0.09);
-      box-shadow: 0 0 20px rgba(139,108,255,0.12);
+      border-color: rgba(139,108,255,0.5);
+      background: rgba(139, 108, 255, 0.1);
+      box-shadow: 0 0 20px rgba(139,108,255,0.15);
     }
 
     .msg.fading {
       transition: opacity 1.2s ease, transform 1.2s ease;
-      opacity: 0.25;
+      opacity: 0.22;
       transform: scale(0.97);
     }
 
@@ -296,7 +309,7 @@
       padding: 1rem;
       display: flex;
       gap: 0.6rem;
-      background: rgba(8,8,12,0.6);
+      background: rgba(8,8,12,0.65);
     }
 
     .compose input { flex: 1; }
@@ -311,19 +324,17 @@
       font-size: 0.9rem;
       text-align: center;
       padding: 2.5rem 1.5rem;
-      gap: 0.6rem;
+      gap: 0.5rem;
     }
-
     .empty .big {
-      font-size: 1.8rem;
-      opacity: 0.35;
-      margin-bottom: 0.3rem;
+      font-size: 1.9rem;
+      opacity: 0.3;
+      margin-bottom: 0.2rem;
     }
 
-    /* Footer manifesto */
     .footer-panel {
       grid-column: 1 / -1;
-      background: rgba(12, 12, 18, 0.75);
+      background: rgba(12, 12, 18, 0.78);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.5rem;
@@ -332,7 +343,6 @@
       line-height: 1.75;
       backdrop-filter: blur(8px);
     }
-
     .footer-panel strong { color: var(--text); }
 
     .donate {
@@ -340,7 +350,6 @@
       padding-top: 1.3rem;
       border-top: 1px solid var(--border);
     }
-
     .donate code {
       display: block;
       background: var(--bg);
@@ -358,11 +367,7 @@
       border-color: var(--accent);
       box-shadow: 0 0 14px var(--accent-glow);
     }
-
-    .copy-hint {
-      font-size: 0.68rem;
-      color: var(--muted);
-    }
+    .copy-hint { font-size: 0.68rem; color: var(--muted); }
 
     .hidden { display: none !important; }
   </style>
@@ -377,7 +382,6 @@
   </header>
 
   <main>
-    <!-- Room controls -->
     <div class="panel" id="roomPanel">
       <div>
         <h2>Your ghost identity</h2>
@@ -405,7 +409,6 @@
       </div>
     </div>
 
-    <!-- Chat -->
     <div class="chat">
       <div class="messages" id="messages">
         <div class="empty" id="emptyState">
@@ -420,7 +423,6 @@
       </div>
     </div>
 
-    <!-- Manifesto + Donate -->
     <div class="footer-panel">
       <strong>Ghostroom</strong> — Enter as a ghost. Leave no trace.<br><br>
       No accounts. No profiles. No permanent keys. Every session is a fresh disposable identity that dies when you close the tab. Only the founder is publicly known. Everyone else stays invisible by design.<br><br>
@@ -443,7 +445,6 @@
       SimplePool
     } from "https://esm.sh/nostr-tools@2.10.4";
 
-    // ─── Config ────────────────────────────────────────────────────
     const RELAYS = [
       "wss://relay.damus.io",
       "wss://nos.lol",
@@ -451,21 +452,30 @@
       "wss://relay.primal.net"
     ];
 
-    // Messages older than this (seconds) are hidden / faded out
-    const EXPIRE_AFTER = 30 * 60; // 30 minutes — best balance of usable chat + true ephemerality
+    const EXPIRE_AFTER = 30 * 60; // 30 minutes
 
-    // ─── State ─────────────────────────────────────────────────────
+    // Cool anonymous cypherpunk-style names
+    const ADJECTIVES = [
+      "Silent", "Null", "Zero", "Dark", "Neon", "Cipher", "Ghost", "Shadow",
+      "Crypto", "Anon", "Void", "Obscure", "Hidden", "Phantom", "Quantum",
+      "Foggy", "Masked", "Veiled", "Whisper", "Stealth", "Rogue", "Faded"
+    ];
+    const NOUNS = [
+      "Packet", "Key", "Node", "Relay", "Hash", "Spectre", "Wraith", "Cipher",
+      "Shadow", "Ghost", "Null", "Zero", "Phantom", "Signal", "Bit", "Byte",
+      "Agent", "Rune", "Code", "Echo", "Drift", "Spark", "Veil", "Mask"
+    ];
+
     let sk = null;
     let pk = null;
     let pool = null;
     let currentRoom = null;
     let sub = null;
     let seen = new Set();
-    let ghostMap = new Map();
-    let ghostCounter = 0;
-    let messageEls = new Map(); // event.id → DOM element (for expiry)
+    let ghostMap = new Map();      // pubkey → cool name
+    let messageStore = [];         // keep events so we can re-sort
+    let messageEls = new Map();
 
-    // ─── DOM ───────────────────────────────────────────────────────
     const $ = (id) => document.getElementById(id);
     const statusDot  = $("statusDot");
     const statusText = $("statusText");
@@ -478,22 +488,28 @@
     const msgInput   = $("msgInput");
     const btnSend    = $("btnSend");
 
-    // ─── Helpers ───────────────────────────────────────────────────
     function randomRoomCode() {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let code = "";
-      for (let i = 0; i < 6; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
-      }
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
       return code;
     }
 
-    function shortGhost(pubkey) {
-      if (!ghostMap.has(pubkey)) {
-        ghostCounter++;
-        ghostMap.set(pubkey, `Ghost ${ghostCounter}`);
+    // Deterministic cool name from pubkey so the same ghost keeps the same name in the room
+    function coolGhostName(pubkey) {
+      if (ghostMap.has(pubkey)) return ghostMap.get(pubkey);
+
+      // simple hash from first bytes of pubkey
+      let hash = 0;
+      for (let i = 0; i < 12; i++) {
+        hash = ((hash << 5) - hash) + pubkey.charCodeAt(i);
+        hash |= 0;
       }
-      return ghostMap.get(pubkey);
+      const adj = ADJECTIVES[Math.abs(hash) % ADJECTIVES.length];
+      const noun = NOUNS[Math.abs(hash >> 8) % NOUNS.length];
+      const name = `${adj} ${noun}`;
+      ghostMap.set(pubkey, name);
+      return name;
     }
 
     function setStatus(text, live = false) {
@@ -516,21 +532,19 @@
       return (Math.floor(Date.now() / 1000) - created_at) > EXPIRE_AFTER;
     }
 
-    // ─── Init identity ─────────────────────────────────────────────
     function initIdentity() {
       sk = generateSecretKey();
       pk = getPublicKey(sk);
-      ghostIdEl.textContent = "Ghost (ephemeral) · " + pk.slice(0, 8) + "…";
+      const myName = coolGhostName(pk);
+      ghostIdEl.innerHTML = `${myName}<br><span style="font-size:0.7rem;opacity:0.7">${pk.slice(0,8)}…</span>`;
     }
 
-    // ─── Pool ──────────────────────────────────────────────────────
     function connectPool() {
       pool = new SimplePool();
       setStatus("connecting…");
       setTimeout(() => setStatus("ready · " + RELAYS.length + " relays", true), 700);
     }
 
-    // ─── Room management ───────────────────────────────────────────
     function enterRoom(code) {
       code = code.trim().toUpperCase();
       if (!code || code.length < 4) return;
@@ -547,19 +561,21 @@
       messagesEl.innerHTML = "";
       seen.clear();
       ghostMap.clear();
-      ghostCounter = 0;
+      messageStore = [];
       messageEls.clear();
+
+      // re-assign my own name in this room
+      coolGhostName(pk);
+      ghostIdEl.innerHTML = `${ghostMap.get(pk)}<br><span style="font-size:0.7rem;opacity:0.7">${pk.slice(0,8)}…</span>`;
 
       updateURL(code);
       subscribeRoom(code);
       setStatus("in room " + code, true);
+      msgInput.focus();
     }
 
     function leaveRoom(updateUi = true) {
-      if (sub) {
-        sub.close();
-        sub = null;
-      }
+      if (sub) { sub.close(); sub = null; }
       currentRoom = null;
       if (updateUi) {
         lobby.classList.remove("hidden");
@@ -574,28 +590,25 @@
       }
     }
 
-    // ─── Subscribe ─────────────────────────────────────────────────
     function subscribeRoom(code) {
       if (!pool) return;
-
       const filter = {
         kinds: [1],
         "#t": ["ghostroom"],
         "#r": [code],
         limit: 80
       };
-
       sub = pool.subscribeMany(RELAYS, [filter], {
         onevent(event) {
           if (seen.has(event.id)) return;
-          if (isExpired(event.created_at)) return; // skip already-old events
+          if (isExpired(event.created_at)) return;
           seen.add(event.id);
-          renderMessage(event);
+          messageStore.push(event);
+          renderAllMessages();
         }
       });
     }
 
-    // ─── Publish ───────────────────────────────────────────────────
     async function sendMessage(text) {
       if (!currentRoom || !text.trim() || !sk) return;
 
@@ -615,21 +628,38 @@
         await Promise.any(pool.publish(RELAYS, event));
         if (!seen.has(event.id)) {
           seen.add(event.id);
-          renderMessage(event);
+          messageStore.push(event);
+          renderAllMessages();
         }
         msgInput.value = "";
+        msgInput.focus();
       } catch (err) {
         console.error("publish failed", err);
         alert("Failed to send. Relays may be unreachable.");
       }
     }
 
-    // ─── Render ────────────────────────────────────────────────────
-    function renderMessage(event) {
-      if (isExpired(event.created_at)) return;
+    // Always render in correct chronological order (oldest → newest)
+    function renderAllMessages() {
+      // sort by created_at then by id for stability
+      messageStore.sort((a, b) => {
+        if (a.created_at !== b.created_at) return a.created_at - b.created_at;
+        return a.id.localeCompare(b.id);
+      });
 
+      messagesEl.innerHTML = "";
+      messageEls.clear();
+
+      for (const event of messageStore) {
+        if (isExpired(event.created_at)) continue;
+        renderOne(event);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function renderOne(event) {
       const isMine = event.pubkey === pk;
-      const name = shortGhost(event.pubkey);
+      const name = coolGhostName(event.pubkey);
       const time = new Date(event.created_at * 1000).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
@@ -645,51 +675,51 @@
         </div>
         <div class="body"></div>
       `;
+      // use textContent so content is never reversed or interpreted as HTML
       div.querySelector(".body").textContent = event.content;
 
       messagesEl.appendChild(div);
       messageEls.set(event.id, div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // ─── Auto-expire loop ──────────────────────────────────────────
     function sweepExpired() {
       const now = Math.floor(Date.now() / 1000);
+      let changed = false;
+
+      messageStore = messageStore.filter(ev => {
+        const age = now - ev.created_at;
+        if (age > EXPIRE_AFTER) {
+          changed = true;
+          return false;
+        }
+        return true;
+      });
+
       for (const [id, el] of messageEls) {
         const created = parseInt(el.dataset.created, 10);
         const age = now - created;
-
         if (age > EXPIRE_AFTER) {
-          // fully remove
           el.remove();
           messageEls.delete(id);
           seen.delete(id);
         } else if (age > EXPIRE_AFTER - 90) {
-          // last 90 seconds → start fading
           el.classList.add("fading");
         }
       }
+
+      if (changed) renderAllMessages();
     }
 
-    setInterval(sweepExpired, 15000); // check every 15s
+    setInterval(sweepExpired, 15000);
 
-    // ─── Event listeners ───────────────────────────────────────────
-    $("btnCreate").addEventListener("click", () => {
-      enterRoom(randomRoomCode());
-    });
-
-    $("btnJoin").addEventListener("click", () => {
-      enterRoom($("joinCode").value);
-    });
-
+    $("btnCreate").addEventListener("click", () => enterRoom(randomRoomCode()));
+    $("btnJoin").addEventListener("click", () => enterRoom($("joinCode").value));
     $("joinCode").addEventListener("keydown", (e) => {
       if (e.key === "Enter") enterRoom($("joinCode").value);
     });
-
     $("btnLeave").addEventListener("click", () => leaveRoom(true));
-
     $("btnCopyLink").addEventListener("click", () => {
-      const link = window.location.origin + window.location.pathname + "#room=" + currentRoom;
+      const link = location.origin + location.pathname + "#room=" + currentRoom;
       copyText(link);
       $("btnCopyLink").textContent = "Copied!";
       setTimeout(() => { $("btnCopyLink").textContent = "Copy invite link"; }, 1600);
@@ -709,12 +739,11 @@
       setTimeout(() => { $("bchAddress").style.borderColor = ""; }, 1200);
     });
 
-    // ─── Boot ──────────────────────────────────────────────────────
+    // Boot
     initIdentity();
     connectPool();
 
-    // Auto-join from URL hash
-    const hash = window.location.hash;
+    const hash = location.hash;
     if (hash.startsWith("#room=")) {
       const code = hash.slice(6).toUpperCase();
       if (code) enterRoom(code);
