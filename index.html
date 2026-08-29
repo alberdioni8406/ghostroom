@@ -842,7 +842,8 @@
   <div class="overlay" id="joinOverlay" role="dialog" aria-modal="true">
     <div class="modal">
       <h3>ENTER A ROOM</h3>
-      <input type="text" id="joinCodeInput" placeholder="GHOST-XXXX" maxlength="16" autocomplete="off" spellcheck="false" style="font-family:inherit;font-size:0.95rem;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:0.7rem 1rem;width:100%;outline:none;" />
+      <input type="text" id="joinCodeInput" placeholder="GHOST-XXXX/secret or full invite" maxlength="64" autocomplete="off" spellcheck="false" style="font-family:inherit;font-size:0.95rem;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:0.7rem 1rem;width:100%;outline:none;" />
+      <p style="font-size:0.65rem;color:var(--muted);line-height:1.4;margin:0">Sealed rooms need the full invite. Codes alone die when the session ends.</p>
       <button class="btn" id="btnConfirmJoin">Enter</button>
       <button class="btn secondary" id="btnCancelJoin">Cancel</button>
     </div>
@@ -1564,15 +1565,13 @@
       const mode = document.querySelector('input[name="mode"]:checked')?.value || "normal";
       $("createOverlay").classList.remove("active");
       const code = randomCode();
-      // Non-normal modes get a short client-side secret for the invite link
+      // Every room is sealed with a client-side secret. Code alone dies with the session.
       let secret = "";
-      if (mode !== "normal") {
-        try {
-          secret = Array.from(crypto.getRandomValues(new Uint8Array(4)))
-            .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 6);
-        } catch (_) {
-          secret = Math.random().toString(36).slice(2, 8);
-        }
+      try {
+        secret = Array.from(crypto.getRandomValues(new Uint8Array(5)))
+          .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+      } catch (_) {
+        secret = Math.random().toString(36).slice(2, 10);
       }
       try {
         await enterRoom(code, mode, secret, true);
@@ -1597,11 +1596,34 @@
     };
     $("btnCancelJoin").onclick = () => $("joinOverlay").classList.remove("active");
     $("btnConfirmJoin").onclick = async () => {
-      const raw = $("joinCodeInput").value.trim();
+      let raw = $("joinCodeInput").value.trim();
       $("joinOverlay").classList.remove("active");
       if (!raw) return;
+      // Accept: GHOST-XXXX | GHOST-XXXX/secret | full URL with #r/GHOST-XXXX/secret
+      let code = raw;
+      let secret = "";
       try {
-        await enterRoom(raw.toUpperCase(), "normal", "", false);
+        if (raw.includes("#r/")) {
+          const frag = raw.split("#r/")[1] || "";
+          const parts = frag.split("/").filter(Boolean);
+          code = parts[0] || "";
+          secret = parts[1] || "";
+        } else if (raw.includes("/")) {
+          const parts = raw.split("/").filter(Boolean);
+          code = parts[0] || "";
+          secret = parts[1] || "";
+        }
+        code = code.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+      } catch (_) {}
+      if (!code) return;
+      if (!secret) {
+        // Sealed rooms require the invite secret. Code-only from an old session cannot open them.
+        showScreen("home");
+        $("homeStats").textContent = "SEALED ROOM — full invite link required. Codes alone die with the session.";
+        return;
+      }
+      try {
+        await enterRoom(code, "normal", secret, false);
       } catch (err) {
         console.error("Failed to join room", err);
         showScreen("home");
