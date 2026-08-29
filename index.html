@@ -184,6 +184,48 @@
       margin-top: 0.5rem;
     }
 
+    .donate-block {
+      margin-top: 1.4rem;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--border);
+      max-width: 360px;
+      text-align: center;
+    }
+    .donate-label {
+      font-size: 0.62rem;
+      letter-spacing: 1.6px;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+    .donate-msg {
+      font-size: 0.68rem;
+      color: var(--whisper);
+      line-height: 1.55;
+      margin-bottom: 0.7rem;
+    }
+    .donate-addr {
+      display: block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.8rem;
+      font-size: 0.68rem;
+      color: var(--accent);
+      word-break: break-all;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .donate-addr:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .donate-hint {
+      display: block;
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
     /* —— Room —— */
     #screen-room {
       max-width: 920px;
@@ -698,6 +740,16 @@
         Client-side encryption. Nostr relay transport.<br>
         Temporary local session. Rooms die when empty.
       </p>
+      <div class="donate-block">
+        <div class="donate-label">KEEP THE VOID ALIVE</div>
+        <p class="donate-msg">
+          Ghostroom stays free, single-file, and ownerless by design.<br>
+          Relays, domains, and the occasional beer still cost something.<br>
+          If this corner of the net matters to you — feed the ghost.
+        </p>
+        <code class="donate-addr" id="bchAddress" title="Click to copy">bitcoincash:qrlluw2ekm2zmp4qn52ashn4qt9xhhg405gcrzehu5</code>
+        <span class="donate-hint" id="bchHint">click to copy · BCH</span>
+      </div>
     </div>
   </div>
 
@@ -1578,6 +1630,16 @@
       await copyText(link);
       $("btnCopyInvite").textContent = "Copied!";
       setTimeout(() => $("btnCopyInvite").textContent = "Copy invite link", 1600);
+    };
+
+    $("bchAddress").onclick = async () => {
+      await copyText($("bchAddress").textContent.trim());
+      $("bchHint").textContent = "copied · thank you, ghost";
+      $("bchAddress").style.borderColor = "var(--success)";
+      setTimeout(() => {
+        $("bchHint").textContent = "click to copy · BCH";
+        $("bchAddress").style.borderColor = "";
+      }, 1800);
     };
 
     $("btnSend").onclick = () => sendMessage($("msgInput").value);
