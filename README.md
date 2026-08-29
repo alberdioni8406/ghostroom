@@ -11,7 +11,7 @@ Disposable cryptographic identity. Client-side encryption. Ephemeral rooms that 
 GitHub → Vercel → index.html → Browser → Nostr relays
 ```
 
-Live (original v1): https://ghostroom-rose.vercel.app  
+Live (original v2): https://ghostroom.xyz  
 Repository: https://github.com/alberdioni8406/ghostroom
 
 ---
