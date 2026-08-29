@@ -2,7 +2,9 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#030306" />
+  <meta name="description" content="Ghostroom — Temporary anonymous rooms. Disposable identity. Client-side encryption. Nostr transport. No accounts. No permanent profiles." />
   <title>Ghostroom — Enter as a ghost. Leave no trace.</title>
   <style>
     :root {
@@ -13,11 +15,16 @@
       --text: #f0f0f8;
       --muted: #6e6e86;
       --accent: #8b6cff;
-      --accent-glow: rgba(139, 108, 255, 0.4);
+      --accent-glow: rgba(139, 108, 255, 0.35);
       --ghost: #b8b8d0;
       --success: #3ecf8e;
+      --warn: #e8b84a;
+      --danger: #e85a5a;
       --input-bg: #0c0c14;
       --whisper: #5a5a78;
+      --hot: #ff6b4a;
+      --warm: #e8b84a;
+      --cold: #5a7a9a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,18 +32,20 @@
     html, body {
       direction: ltr !important;
       unicode-bidi: embed;
+      height: 100%;
     }
 
     body {
-      font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", "Menlo", monospace;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      line-height: 1.55;
+      min-height: 100dvh;
+      line-height: 1.5;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
       position: relative;
+      -webkit-font-smoothing: antialiased;
     }
 
     body::before {
@@ -44,345 +53,484 @@
       position: fixed;
       inset: 0;
       background-image:
-        radial-gradient(1.8px 1.8px at 15% 25%, rgba(139,108,255,0.18) 50%, transparent 50%),
-        radial-gradient(1.2px 1.2px at 75% 55%, rgba(180,180,220,0.12) 50%, transparent 50%),
-        radial-gradient(1.5px 1.5px at 45% 80%, rgba(139,108,255,0.1) 50%, transparent 50%),
-        radial-gradient(1px 1px at 90% 15%, rgba(200,200,230,0.08) 50%, transparent 50%),
-        radial-gradient(1.3px 1.3px at 30% 60%, rgba(139,108,255,0.14) 50%, transparent 50%),
-        radial-gradient(1px 1px at 60% 35%, rgba(160,160,200,0.1) 50%, transparent 50%);
+        radial-gradient(1.8px 1.8px at 15% 25%, rgba(139,108,255,0.16) 50%, transparent 50%),
+        radial-gradient(1.2px 1.2px at 75% 55%, rgba(180,180,220,0.1) 50%, transparent 50%),
+        radial-gradient(1.5px 1.5px at 45% 80%, rgba(139,108,255,0.08) 50%, transparent 50%),
+        radial-gradient(1px 1px at 90% 15%, rgba(200,200,230,0.07) 50%, transparent 50%),
+        radial-gradient(1.3px 1.3px at 30% 60%, rgba(139,108,255,0.12) 50%, transparent 50%);
       pointer-events: none;
       z-index: 0;
-      animation: drift 55s linear infinite;
+      animation: drift 60s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body::before { animation: none; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     @keyframes drift {
       0% { transform: translateY(0) translateX(0); }
-      50% { transform: translateY(-18px) translateX(6px); }
+      50% { transform: translateY(-14px) translateX(5px); }
       100% { transform: translateY(0) translateX(0); }
     }
 
-    header {
-      position: relative;
-      z-index: 10;
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(8, 8, 14, 0.92);
-      backdrop-filter: blur(14px);
+    @keyframes materialize {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .logo {
-      font-size: 1.3rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--text);
-      text-shadow: 0 0 22px var(--accent-glow);
-    }
-    .logo span { color: var(--accent); }
-
-    .status {
-      font-size: 0.72rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
     }
 
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--muted);
-    }
-    .dot.live {
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    main {
+    /* —— Screens —— */
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
       position: relative;
       z-index: 5;
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    .screen.active { display: flex; }
+
+    /* —— Birth sequence —— */
+    #screen-birth {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1.5rem;
+      background: var(--bg);
+    }
+    .birth-log {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.9;
+      max-width: 320px;
+      min-height: 180px;
+      text-align: left;
+    }
+    .birth-log .line { opacity: 0; animation: fade-in 0.4s ease forwards; }
+    .birth-log .accent { color: var(--accent); }
+    .birth-log .ghost-name {
+      font-size: 1.35rem;
+      color: var(--text);
+      text-shadow: 0 0 20px var(--accent-glow);
+      margin: 0.6rem 0 0.2rem;
+      letter-spacing: 1px;
+    }
+    .birth-log .ghost-id {
+      font-size: 0.75rem;
+      color: var(--ghost);
+      letter-spacing: 2px;
+    }
+
+    /* —— Home —— */
+    #screen-home {
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+    .home-hero {
+      text-align: center;
+      max-width: 380px;
+    }
+    .home-logo {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 28px var(--accent-glow);
+      margin-bottom: 0.4rem;
+    }
+    .home-logo span { color: var(--accent); }
+    .home-tag {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+    .home-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    .home-stats {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      margin-top: 1.2rem;
+      opacity: 0.85;
+    }
+    .home-privacy {
+      font-size: 0.68rem;
+      color: var(--whisper);
+      max-width: 340px;
+      line-height: 1.6;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* —— Room —— */
+    #screen-room {
       max-width: 920px;
       width: 100%;
       margin: 0 auto;
-      padding: 1.3rem;
-      gap: 1.2rem;
+      padding: 0;
     }
 
-    @media (min-width: 820px) {
-      main { grid-template-columns: 260px 1fr; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(8, 8, 14, 0.94);
+      backdrop-filter: blur(12px);
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      text-shadow: 0 0 18px var(--accent-glow);
+      cursor: pointer;
+    }
+    .logo span { color: var(--accent); }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .dot.live { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot.degraded { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+    .dot.offline { background: var(--danger); }
+
+    .room-body {
+      display: grid;
+      grid-template-columns: 1fr;
+      flex: 1;
+      min-height: 0;
+      padding: 0.8rem;
+      gap: 0.8rem;
+    }
+    @media (min-width: 780px) {
+      .room-body { grid-template-columns: 230px 1fr; }
     }
 
     .panel {
-      background: rgba(10, 10, 16, 0.82);
+      background: rgba(10, 10, 16, 0.85);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.15rem;
+      border-radius: 12px;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.95rem;
-      backdrop-filter: blur(10px);
+      gap: 0.85rem;
+      backdrop-filter: blur(8px);
+      height: fit-content;
     }
-
     .panel h2 {
-      font-size: 0.62rem;
+      font-size: 0.58rem;
       text-transform: uppercase;
-      letter-spacing: 1.6px;
+      letter-spacing: 1.5px;
       color: var(--muted);
     }
 
-    input[type="text"] {
-      font-family: inherit;
-      font-size: 0.95rem;
-      border-radius: 10px;
+    .ghost-badge {
+      font-size: 0.8rem;
+      color: var(--ghost);
+      text-align: center;
+      padding: 0.55rem;
+      background: var(--bg);
+      border-radius: 8px;
       border: 1px solid var(--border);
-      background: var(--input-bg) !important;
-      color: #ffffff !important;
-      -webkit-text-fill-color: #ffffff !important;
-      caret-color: var(--accent);
-      padding: 0.8rem 1rem;
-      width: 100%;
-      outline: none;
-      direction: ltr !important;
-      unicode-bidi: plaintext !important;
-      text-align: left !important;
+      line-height: 1.4;
+    }
+    .ghost-badge .id {
+      font-size: 0.68rem;
+      opacity: 0.7;
+      letter-spacing: 1px;
+      margin-top: 0.15rem;
     }
 
-    input[type="text"]::placeholder {
-      color: #686880 !important;
-      opacity: 1;
+    .room-code {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-align: center;
+      color: var(--accent);
+      padding: 0.55rem;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px dashed rgba(139,108,255,0.35);
+      text-shadow: 0 0 14px var(--accent-glow);
     }
 
-    input[type="text"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--muted);
+      gap: 0.4rem;
+    }
+    .temp-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+    .temp-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.6s ease, background 0.4s;
+      border-radius: 2px;
+    }
+    .temp-fill.cold { background: var(--cold); }
+    .temp-fill.warm { background: var(--warm); }
+    .temp-fill.hot, .temp-fill.chaotic { background: var(--hot); }
+
+    .presence-dots {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      min-height: 14px;
+    }
+    .presence-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.85;
+      box-shadow: 0 0 6px var(--accent-glow);
     }
 
-    input[type="text"]:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    .mode-tag {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-align: center;
+      color: var(--accent);
+      border: 1px solid rgba(139,108,255,0.3);
+      border-radius: 6px;
+      padding: 0.3rem 0.5rem;
     }
 
-    .panel button {
+    .panel button, .btn {
       font-family: inherit;
-      font-size: 0.88rem;
-      border-radius: 10px;
+      font-size: 0.82rem;
+      border-radius: 9px;
       border: 1px solid var(--accent);
       background: var(--accent);
       color: #fff;
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 0.9rem;
       width: 100%;
       cursor: pointer;
       font-weight: 600;
-      transition: all 0.2s;
+      transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
     }
-    .panel button:hover {
+    .panel button:hover, .btn:hover {
       background: #7a5cf0;
-      box-shadow: 0 0 16px var(--accent-glow);
+      box-shadow: 0 0 14px var(--accent-glow);
     }
-    .panel button:disabled {
+    .panel button:disabled, .btn:disabled {
       opacity: 0.35;
       cursor: not-allowed;
       box-shadow: none;
     }
-    .panel button.secondary {
+    .panel button.secondary, .btn.secondary {
       background: transparent;
       color: var(--text);
       border-color: var(--border);
     }
-    .panel button.secondary:hover {
+    .panel button.secondary:hover, .btn.secondary:hover {
       border-color: var(--accent);
       color: var(--accent);
+      box-shadow: none;
+    }
+    .panel button.danger {
+      border-color: var(--danger);
+      background: transparent;
+      color: var(--danger);
+    }
+    .panel button.danger:hover {
+      background: rgba(232,90,90,0.12);
     }
 
-    .room-code {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-align: center;
-      color: var(--accent);
-      padding: 0.75rem;
-      background: var(--bg);
-      border-radius: 10px;
-      border: 1px dashed rgba(139,108,255,0.4);
-      text-shadow: 0 0 16px var(--accent-glow);
-    }
-
-    .ghost-id {
-      font-size: 0.82rem;
-      color: var(--ghost);
-      text-align: center;
-      padding: 0.6rem;
-      background: var(--bg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      line-height: 1.45;
-    }
-
-    .ghost-count {
-      font-size: 0.72rem;
-      color: var(--muted);
-      text-align: center;
-      padding: 0.4rem;
-    }
-
-    .expire-note {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.4;
-    }
-
+    /* Chat */
     .chat {
       display: flex;
       flex-direction: column;
-      background: rgba(10, 10, 16, 0.82);
+      background: rgba(10, 10, 16, 0.85);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
-      min-height: 480px;
-      backdrop-filter: blur(10px);
+      min-height: 420px;
+      height: calc(100dvh - 140px);
+      max-height: 640px;
+      backdrop-filter: blur(8px);
+    }
+    @media (min-width: 780px) {
+      .chat { height: calc(100dvh - 100px); }
     }
 
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding: 1.2rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 0.7rem;
+      scroll-behavior: smooth;
     }
 
     .msg {
       display: flex;
       flex-direction: column;
-      gap: 0.22rem;
+      gap: 0.18rem;
       max-width: 88%;
-      opacity: 0;
-      transform: translateY(6px);
-      animation: materialize 0.45s ease forwards;
+      animation: materialize 0.35s ease forwards;
     }
-
-    @keyframes materialize {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .msg .meta {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--muted);
       display: flex;
-      gap: 0.6rem;
+      gap: 0.5rem;
+      align-items: center;
     }
-
-    .msg .name {
-      color: var(--ghost);
-      font-weight: 600;
-    }
-
+    .msg .name { color: var(--ghost); font-weight: 600; }
     .msg .body {
       background: var(--surface2);
-      padding: 0.7rem 1rem;
-      border-radius: 12px;
+      padding: 0.6rem 0.9rem;
+      border-radius: 11px;
       border: 1px solid var(--border);
       word-break: break-word;
       white-space: pre-wrap;
-      direction: ltr !important;
-      unicode-bidi: plaintext !important;
-      text-align: left !important;
+      font-size: 0.9rem;
     }
-
     .msg.mine { align-self: flex-end; }
     .msg.mine .meta { justify-content: flex-end; }
     .msg.mine .body {
-      border-color: rgba(139,108,255,0.5);
-      background: rgba(139, 108, 255, 0.11);
+      border-color: rgba(139,108,255,0.45);
+      background: rgba(139,108,255,0.1);
     }
-
     .msg.system {
       align-self: center;
       max-width: 95%;
-      opacity: 0.7;
+      opacity: 0.75;
     }
     .msg.system .body {
       background: transparent;
       border: none;
       color: var(--whisper);
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-style: italic;
       text-align: center;
-      padding: 0.3rem 0.8rem;
+      padding: 0.25rem 0.6rem;
     }
-
-    /* Silent disappear — only opacity, no scale or shake */
-    .msg.fading {
-      transition: opacity 1.6s ease;
-      opacity: 0;
+    .msg.fading { transition: opacity 1.5s ease; opacity: 0; }
+    .msg .expire {
+      font-size: 0.6rem;
+      color: var(--whisper);
+      opacity: 0.7;
+    }
+    .msg.reaction .body {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-size: 0.8rem;
+      padding: 0.2rem 0;
     }
 
     .typing {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
       font-style: italic;
-      padding: 0 0.3rem 0.5rem 1.2rem;
+      padding: 0 1rem 0.4rem;
       opacity: 0;
-      transition: opacity 0.25s;
+      transition: opacity 0.2s;
       height: 0;
       overflow: hidden;
     }
-    .typing.visible {
-      opacity: 1;
-      height: auto;
-    }
+    .typing.visible { opacity: 1; height: auto; }
 
     .compose {
       border-top: 1px solid var(--border);
-      padding: 0.9rem 1rem;
+      padding: 0.75rem 0.9rem;
       display: flex;
-      flex-direction: row;
+      gap: 0.6rem;
+      background: rgba(6,6,12,0.8);
       align-items: stretch;
-      gap: 0.7rem;
-      background: rgba(6, 6, 12, 0.75);
     }
-
     .compose input {
-      flex: 1 1 auto;
+      flex: 1;
       min-width: 0;
-      width: auto !important;
-      height: 48px;
-      font-size: 1rem;
-      padding: 0 1.1rem;
+      height: 44px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: #fff;
+      -webkit-text-fill-color: #fff;
+      caret-color: var(--accent);
+      padding: 0 0.95rem;
+      outline: none;
     }
-
+    .compose input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    .compose input:disabled { opacity: 0.4; }
     .compose button {
       flex: 0 0 auto;
-      width: auto !important;
-      min-width: 90px;
-      height: 48px;
-      padding: 0 1.4rem;
-      border-radius: 10px;
+      min-width: 80px;
+      height: 44px;
+      padding: 0 1.1rem;
+      border-radius: 9px;
       border: 1px solid var(--accent);
       background: var(--accent);
       color: #fff;
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
-      white-space: nowrap;
     }
-    .compose button:hover {
-      background: #7a5cf0;
-      box-shadow: 0 0 14px var(--accent-glow);
-    }
-    .compose button:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
+    .compose button:hover { background: #7a5cf0; box-shadow: 0 0 12px var(--accent-glow); }
+    .compose button:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 
     .empty {
       flex: 1;
@@ -391,120 +539,265 @@
       align-items: center;
       justify-content: center;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: center;
       padding: 2rem;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
-    .empty .big {
-      font-size: 1.9rem;
-      opacity: 0.25;
-    }
+    .empty .big { font-size: 1.8rem; opacity: 0.3; }
 
-    .footer-panel {
-      grid-column: 1 / -1;
-      background: rgba(10, 10, 16, 0.82);
+    /* Create modal / overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3,3,6,0.85);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(6px);
+    }
+    .overlay.active { display: flex; }
+    .modal {
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1.4rem;
-      font-size: 0.84rem;
-      color: var(--muted);
-      line-height: 1.7;
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
     }
-    .footer-panel strong { color: var(--text); }
+    .modal h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: var(--muted);
+    }
+    .mode-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .mode-opt {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.15s;
+    }
+    .mode-opt:hover, .mode-opt.selected {
+      border-color: var(--accent);
+      background: rgba(139,108,255,0.08);
+    }
+    .mode-opt input { accent-color: var(--accent); }
+    .mode-opt .desc {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
 
-    .donate {
-      margin-top: 1.2rem;
-      padding-top: 1.2rem;
+    /* Death screen */
+    #screen-death {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .death-box {
+      max-width: 320px;
+    }
+    .death-box h1 {
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      color: var(--ghost);
+    }
+    .death-stats {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Last ghost banner */
+    .last-ghost {
+      font-size: 0.72rem;
+      color: var(--warn);
+      text-align: center;
+      padding: 0.4rem;
+      border: 1px solid rgba(232,184,74,0.3);
+      border-radius: 6px;
+      background: rgba(232,184,74,0.06);
+      display: none;
+    }
+    .last-ghost.visible { display: block; }
+
+    /* Debug */
+    #debug {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.92);
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      z-index: 100;
+      display: none;
+      max-height: 140px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+    #debug.visible { display: block; }
+
+    .footer-mini {
+      font-size: 0.65rem;
+      color: var(--whisper);
+      text-align: center;
+      padding: 0.6rem;
       border-top: 1px solid var(--border);
     }
-    .donate code {
-      display: block;
-      background: var(--bg);
-      padding: 0.75rem 1rem;
-      border-radius: 9px;
-      font-size: 0.78rem;
-      color: var(--accent);
-      word-break: break-all;
-      margin: 0.5rem 0;
-      border: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .donate code:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-    .copy-hint { font-size: 0.68rem; color: var(--muted); }
 
     .hidden { display: none !important; }
+
+    /* Mobile safe areas */
+    @supports (padding: env(safe-area-inset-bottom)) {
+      .compose { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+      header { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">Ghost<span>room</span></div>
-    <div class="status">
-      <div class="dot" id="statusDot"></div>
-      <span id="statusText">disconnected</span>
+  <!-- BIRTH -->
+  <div id="screen-birth" class="screen active" role="status" aria-live="polite">
+    <div class="birth-log" id="birthLog"></div>
+  </div>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen">
+    <div class="home-hero">
+      <div class="home-logo">Ghost<span>room</span></div>
+      <div class="home-tag">ENTER WITHOUT A NAME.</div>
+      <div class="home-actions">
+        <button class="btn" id="btnFindGhost">FIND A GHOST</button>
+        <button class="btn secondary" id="btnCreateRoom">CREATE A ROOM</button>
+        <button class="btn secondary" id="btnEnterCode">ENTER A ROOM</button>
+      </div>
+      <div class="home-stats" id="homeStats">NETWORK · connecting…</div>
+      <p class="home-privacy">
+        No account. No permanent identity. Disposable key.<br>
+        Client-side encryption. Nostr relay transport.<br>
+        Temporary local session. Rooms die when empty.
+      </p>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <div class="panel">
-      <div>
-        <h2>Your ghost identity</h2>
-        <div class="ghost-id" id="ghostId">Generating…</div>
+  <!-- ROOM -->
+  <div id="screen-room" class="screen">
+    <header>
+      <div class="logo" id="logoHome">Ghost<span>room</span></div>
+      <div class="header-meta">
+        <div class="status-pill">
+          <div class="dot" id="netDot"></div>
+          <span id="netText">connecting</span>
+        </div>
+        <span id="relayCount">0/0</span>
+      </div>
+    </header>
+
+    <div class="room-body">
+      <div class="panel" id="sidePanel">
+        <div>
+          <h2>Your ghost</h2>
+          <div class="ghost-badge" id="ghostBadge">—</div>
+        </div>
+        <div>
+          <h2>Room</h2>
+          <div class="room-code" id="roomCodeDisplay">—</div>
+        </div>
+        <div class="mode-tag" id="modeTag">NORMAL</div>
+        <div>
+          <h2>Temperature</h2>
+          <div class="meta-row">
+            <span id="tempLabel">COLD</span>
+            <span id="ghostCountLabel">1 ghost</span>
+          </div>
+          <div class="temp-bar"><div class="temp-fill cold" id="tempFill" style="width:15%"></div></div>
+        </div>
+        <div>
+          <h2>Presence</h2>
+          <div class="presence-dots" id="presenceDots" aria-label="Ghost presence"></div>
+        </div>
+        <div class="last-ghost" id="lastGhostBanner">YOU ARE THE LAST GHOST.<br>When you leave, the room fades.</div>
+        <button class="secondary" id="btnCopyInvite">Copy invite link</button>
+        <button class="secondary" id="btnLeaveRoom">Leave room</button>
+        <p class="expire-note" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
+          Messages fade after 5 min.<br>Session ends when you leave.
+        </p>
       </div>
 
-      <div id="lobby">
-        <h2>Create or join a room</h2>
-        <button id="btnCreate">Create new room</button>
-        <div style="height:0.5rem"></div>
-        <input type="text" id="joinCode" placeholder="Enter room code" maxlength="12" autocomplete="off" spellcheck="false" />
-        <div style="height:0.4rem"></div>
-        <button class="secondary" id="btnJoin">Join room</button>
-      </div>
-
-      <div id="inRoom" class="hidden">
-        <h2>Current room</h2>
-        <div class="room-code" id="currentCode">————</div>
-        <div class="ghost-count" id="ghostCount">1 ghost present</div>
-        <div style="height:0.45rem"></div>
-        <button class="secondary" id="btnLeave">Leave room</button>
-        <div style="height:0.35rem"></div>
-        <button class="secondary" id="btnCopyLink">Copy invite link</button>
-        <div style="height:0.6rem"></div>
-        <p class="expire-note">Messages vanish after 5 minutes.<br>Rooms fade when empty.</p>
-      </div>
-    </div>
-
-    <div class="chat">
-      <div class="messages" id="messages">
-        <div class="empty" id="emptyState">
-          <div class="big">◈</div>
-          Create or join a room.<br>
-          Everyone here is a ghost.
+      <div class="chat">
+        <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions">
+          <div class="empty" id="emptyState">
+            <div class="big">◈</div>
+            The room is quiet.<br>Speak as a ghost.
+          </div>
+        </div>
+        <div class="typing" id="typingIndicator" aria-live="polite">◉ A ghost is writing…</div>
+        <div class="compose">
+          <input type="text" id="msgInput" placeholder="Speak as a ghost…" disabled maxlength="800" autocomplete="off" aria-label="Message" />
+          <button id="btnSend" disabled>Send</button>
         </div>
       </div>
-      <div class="typing" id="typingIndicator">A ghost is writing…</div>
-      <div class="compose">
-        <input type="text" id="msgInput" placeholder="Speak as a ghost…" disabled maxlength="1000" autocomplete="off" />
-        <button id="btnSend" disabled>Send</button>
-      </div>
     </div>
+  </div>
 
-    <div class="footer-panel">
-      <strong>Ghostroom</strong> — Enter as a ghost. Leave no trace.<br><br>
-      No accounts. No profiles. No permanent keys. Every session is a fresh disposable identity that dies when you close the tab. Only the founder is publicly known. Everyone else stays invisible by design.<br><br>
-      Pure HTML. No backend. No company. Just Nostr relays and temporary rooms anyone can create and share. Messages auto-expire after 5 minutes so nothing is meant to last.
-
-      <div class="donate">
-        <strong>Support the founder</strong><br>
-        Ghostroom is free forever. If you value a place where people can still speak without being watched, send a few BCH:
-        <code id="bchAddress" title="Click to copy">bitcoincash:qqfulj02jw33za5vdxp2z7p03adu64z24q88u47dcn</code>
-        <span class="copy-hint">← click to copy</span>
-      </div>
+  <!-- DEATH -->
+  <div id="screen-death" class="screen">
+    <div class="death-box">
+      <h1>YOUR GHOST HAS VANISHED.</h1>
+      <div class="death-stats" id="deathStats"></div>
+      <button class="btn" id="btnReturnHome">Return to the void</button>
     </div>
-  </main>
+  </div>
+
+  <!-- CREATE MODAL -->
+  <div class="overlay" id="createOverlay" role="dialog" aria-modal="true" aria-labelledby="createTitle">
+    <div class="modal">
+      <h3 id="createTitle">CREATE GHOSTROOM</h3>
+      <div class="mode-list" id="modeList">
+        <label class="mode-opt selected"><input type="radio" name="mode" value="normal" checked /> <span>NORMAL<span class="desc">Standard temporary room</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="burn" /> <span>🔥 BURN<span class="desc">Dies when last ghost leaves</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="solo" /> <span>SOLO<span class="desc">One ghost only</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="two" /> <span>TWO-GHOST<span class="desc">Max two participants</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="broadcast" /> <span>BROADCAST<span class="desc">One speaker, many listeners</span></span></label>
+      </div>
+      <button class="btn" id="btnConfirmCreate">Create</button>
+      <button class="btn secondary" id="btnCancelCreate">Cancel</button>
+    </div>
+  </div>
+
+  <!-- JOIN CODE MODAL -->
+  <div class="overlay" id="joinOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>ENTER A ROOM</h3>
+      <input type="text" id="joinCodeInput" placeholder="GHOST-XXXX" maxlength="16" autocomplete="off" spellcheck="false" style="font-family:inherit;font-size:0.95rem;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:0.7rem 1rem;width:100%;outline:none;" />
+      <button class="btn" id="btnConfirmJoin">Enter</button>
+      <button class="btn secondary" id="btnCancelJoin">Cancel</button>
+    </div>
+  </div>
+
+  <!-- DEBUG -->
+  <div id="debug" aria-hidden="true"></div>
 
   <script type="module">
     import {
@@ -514,15 +807,36 @@
       SimplePool
     } from "https://esm.sh/nostr-tools@2.10.4";
 
+    // ═══════════════════════════════════════════════════════════
+    // GHOST PROTOCOL v0.2 — Experimental ephemeral communication
+    // ═══════════════════════════════════════════════════════════
+    const PROTOCOL = "Ghost Protocol v0.2";
+    const KIND_MSG = 1;
+    const KIND_META = 30078; // replaceable for room meta (experimental)
+    const EXPIRE_SEC = 5 * 60;
+    const TYPING_TTL = 2800;
+    const PRESENCE_TTL = 45; // seconds without activity → consider inactive
+    const MAX_MSG_LEN = 800;
+    const RATE_LIMIT_MS = 900;
     const RELAYS = [
       "wss://relay.damus.io",
       "wss://nos.lol",
-      "wss://relay.snort.social",
-      "wss://relay.primal.net"
+      "wss://relay.primal.net",
+      "wss://relay.snort.social"
     ];
 
-    const EXPIRE_AFTER = 5 * 60; // 5 minutes
-
+    const ADJECTIVES = [
+      "Silent","Null","Zero","Dark","Neon","Cipher","Ghost","Shadow",
+      "Crypto","Anon","Void","Obscure","Hidden","Phantom","Quantum",
+      "Foggy","Masked","Veiled","Whisper","Stealth","Rogue","Faded",
+      "Pale","Cold","Drift","Echo","Static","Hollow"
+    ];
+    const NOUNS = [
+      "Packet","Key","Node","Relay","Hash","Spectre","Wraith","Cipher",
+      "Shadow","Ghost","Null","Zero","Phantom","Signal","Bit","Byte",
+      "Agent","Rune","Code","Echo","Drift","Spark","Veil","Mask",
+      "Wisp","Shade","Pulse","Trace"
+    ];
     const WHISPERS = [
       "A cold wind passes through the room…",
       "Something just faded into the dark.",
@@ -533,269 +847,570 @@
       "The air feels thinner for a moment.",
       "A distant echo dies away."
     ];
+    const REACTIONS = {
+      echo: "◈ ECHO",
+      understood: "◈ UNDERSTOOD",
+      silence: "◈ SILENCE",
+      vanish: "◈ VANISH",
+      suspicious: "◈ SUSPICIOUS"
+    };
 
-    const ADJECTIVES = [
-      "Silent","Null","Zero","Dark","Neon","Cipher","Ghost","Shadow",
-      "Crypto","Anon","Void","Obscure","Hidden","Phantom","Quantum",
-      "Foggy","Masked","Veiled","Whisper","Stealth","Rogue","Faded"
-    ];
-    const NOUNS = [
-      "Packet","Key","Node","Relay","Hash","Spectre","Wraith","Cipher",
-      "Shadow","Ghost","Null","Zero","Phantom","Signal","Bit","Byte",
-      "Agent","Rune","Code","Echo","Drift","Spark","Veil","Mask"
-    ];
-
-    let sk = null, pk = null, pool = null, currentRoom = null, sub = null;
+    // ── State ────────────────────────────────────────────────
+    let sk = null;           // Uint8Array private key (memory only)
+    let pk = null;           // hex public key
+    let ghostId = null;      // GHOST-XXXX
+    let ghostName = null;    // Cipher Wraith
+    let pool = null;
+    let currentRoom = null;  // { code, mode, secret, createdAt, isCreator, speakerPk }
+    let sub = null;
     let seen = new Set();
-    let ghostMap = new Map();
     let messageStore = [];
     let messageEls = new Map();
-    let activeGhosts = new Set();
+    let presenceMap = new Map(); // pubkey → lastSeen ts
     let lastTypingSent = 0;
     let myTypingIds = new Set();
     let typingClearTimer = null;
     let lastWhisper = 0;
+    let lastSendTime = 0;
+    let sessionStart = 0;
+    let messagesSent = 0;
+    let roomKey = null;      // CryptoKey for E2EE (AES-GCM)
+    let healthyRelays = new Set();
+    let debugMode = false;
+    let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // ── DOM ──────────────────────────────────────────────────
     const $ = id => document.getElementById(id);
-    const statusDot = $("statusDot"), statusText = $("statusText");
-    const ghostIdEl = $("ghostId"), lobby = $("lobby"), inRoom = $("inRoom");
-    const currentCode = $("currentCode"), messagesEl = $("messages");
-    const emptyState = $("emptyState"), msgInput = $("msgInput"), btnSend = $("btnSend");
-    const ghostCountEl = $("ghostCount"), typingEl = $("typingIndicator");
+    const screens = {
+      birth: $("screen-birth"),
+      home: $("screen-home"),
+      room: $("screen-room"),
+      death: $("screen-death")
+    };
 
-    function randomRoomCode() {
+    // ── Utils ────────────────────────────────────────────────
+    function showScreen(name) {
+      Object.values(screens).forEach(s => s.classList.remove("active"));
+      screens[name].classList.add("active");
+    }
+
+    function randomCode() {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let c = "";
       for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
       return "GHOST-" + c;
     }
 
-    function coolGhostName(pubkey) {
-      if (ghostMap.has(pubkey)) return ghostMap.get(pubkey);
+    function shortId(hex) {
+      return hex.slice(0, 4).toUpperCase();
+    }
+
+    function coolName(pubkey) {
       let hash = 0;
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < Math.min(16, pubkey.length); i++) {
         hash = ((hash << 5) - hash) + pubkey.charCodeAt(i);
         hash |= 0;
       }
-      const name = ADJECTIVES[Math.abs(hash) % ADJECTIVES.length] + " " +
-                   NOUNS[Math.abs(hash >> 8) % NOUNS.length];
-      ghostMap.set(pubkey, name);
-      return name;
+      return ADJECTIVES[Math.abs(hash) % ADJECTIVES.length] + " " +
+             NOUNS[Math.abs(hash >> 8) % NOUNS.length];
     }
 
-    function setStatus(t, live = false) {
-      statusText.textContent = t;
-      statusDot.classList.toggle("live", live);
+    function setNetStatus(text, state = "offline") {
+      $("netText").textContent = text;
+      const dot = $("netDot");
+      dot.className = "dot " + (state === "live" ? "live" : state === "degraded" ? "degraded" : "offline");
+      if ($("relayCount")) $("relayCount").textContent = healthyRelays.size + "/" + RELAYS.length;
     }
 
-    function updateURL(room) {
-      const url = new URL(location);
-      url.hash = room ? "room=" + room : "";
-      history.replaceState(null, "", url);
+    function copyText(t) {
+      return navigator.clipboard.writeText(t).catch(() => {});
     }
-
-    function copyText(t) { navigator.clipboard.writeText(t).catch(() => {}); }
 
     function isExpired(ts) {
-      return (Math.floor(Date.now() / 1000) - ts) > EXPIRE_AFTER;
+      return (Math.floor(Date.now() / 1000) - ts) > EXPIRE_SEC;
     }
 
-    function updateGhostCount() {
-      const n = activeGhosts.size || 1;
-      ghostCountEl.textContent = n === 1 ? "1 ghost present" : n + " ghosts present";
+    function escapeHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s;
+      return d.innerHTML;
     }
 
-    function initIdentity() {
+    // ── Cryptography (Web Crypto AES-GCM) ────────────────────
+    async function deriveRoomKey(roomCode, secret = "") {
+      const enc = new TextEncoder();
+      const material = await crypto.subtle.importKey(
+        "raw",
+        enc.encode("ghostroom-v2|" + roomCode + "|" + secret),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: enc.encode("ghostroom-salt-v2"), iterations: 100000, hash: "SHA-256" },
+        material,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptContent(plaintext) {
+      if (!roomKey) return plaintext; // fallback plaintext if no key
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const enc = new TextEncoder();
+      const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, roomKey, enc.encode(plaintext));
+      const combined = new Uint8Array(iv.length + ct.byteLength);
+      combined.set(iv, 0);
+      combined.set(new Uint8Array(ct), iv.length);
+      return "g2:" + btoa(String.fromCharCode(...combined));
+    }
+
+    async function decryptContent(ciphertext) {
+      if (!ciphertext.startsWith("g2:") || !roomKey) return ciphertext;
+      try {
+        const raw = Uint8Array.from(atob(ciphertext.slice(3)), c => c.charCodeAt(0));
+        const iv = raw.slice(0, 12);
+        const data = raw.slice(12);
+        const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, roomKey, data);
+        return new TextDecoder().decode(pt);
+      } catch {
+        return "[encrypted — cannot decrypt]";
+      }
+    }
+
+    // ── Relay Manager ────────────────────────────────────────
+    function connectPool() {
+      if (pool) try { pool.close(RELAYS); } catch {}
+      pool = new SimplePool();
+      healthyRelays = new Set(RELAYS);
+      setNetStatus("ready · " + RELAYS.length + " paths", "live");
+      $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths";
+    }
+
+    function updateRelayHealth() {
+      // SimplePool doesn't expose per-relay health easily; we approximate
+      const n = healthyRelays.size;
+      if (n === 0) setNetStatus("offline", "offline");
+      else if (n < RELAYS.length) setNetStatus("degraded · " + n + "/" + RELAYS.length, "degraded");
+      else setNetStatus("connected · " + n + "/" + RELAYS.length, "live");
+    }
+
+    // ── Identity ─────────────────────────────────────────────
+    function createIdentity() {
       sk = generateSecretKey();
       pk = getPublicKey(sk);
-      const name = coolGhostName(pk);
-      ghostIdEl.innerHTML = name + '<br><span style="font-size:0.7rem;opacity:0.7">' + pk.slice(0,8) + '…</span>';
+      ghostId = "GHOST-" + shortId(pk);
+      ghostName = coolName(pk);
+      // Never persist sk
     }
 
-    function connectPool() {
-      pool = new SimplePool();
-      setStatus("connecting…");
-      setTimeout(() => setStatus("ready · " + RELAYS.length + " relays", true), 600);
+    // ── Birth sequence ───────────────────────────────────────
+    async function runBirth() {
+      const log = $("birthLog");
+      log.innerHTML = "";
+      const lines = [
+        { t: "GHOSTROOM", cls: "accent", delay: 0 },
+        { t: "INITIALIZING…", delay: 400 },
+        { t: "creating temporary identity…", delay: 900 },
+        { t: "connecting to ghost network…", delay: 1400 },
+        { t: "identity created.", delay: 2000 },
+        { t: ghostName, cls: "ghost-name", delay: 2400 },
+        { t: ghostId, cls: "ghost-id", delay: 2600 },
+        { t: "YOU HAVE ARRIVED.", cls: "accent", delay: 3100 }
+      ];
+      for (const line of lines) {
+        await new Promise(r => setTimeout(r, reducedMotion ? 50 : line.delay - (lines.indexOf(line) > 0 ? lines[lines.indexOf(line)-1].delay : 0)));
+        const div = document.createElement("div");
+        div.className = "line" + (line.cls ? " " + line.cls : "");
+        div.textContent = line.t;
+        log.appendChild(div);
+      }
+      await new Promise(r => setTimeout(r, reducedMotion ? 200 : 900));
+      showScreen("home");
     }
 
-    function enterRoom(code) {
-      code = code.trim().toUpperCase();
-      if (!code || code.length < 4) return;
+    // ── Presence & Temperature ───────────────────────────────
+    function touchPresence(pubkey) {
+      presenceMap.set(pubkey, Math.floor(Date.now() / 1000));
+    }
+
+    function getActiveGhosts() {
+      const now = Math.floor(Date.now() / 1000);
+      const active = [];
+      for (const [pk, ts] of presenceMap) {
+        if (now - ts <= PRESENCE_TTL) active.push(pk);
+        else presenceMap.delete(pk);
+      }
+      if (pk && !active.includes(pk)) active.push(pk);
+      return active;
+    }
+
+    function updatePresenceUI() {
+      const active = getActiveGhosts();
+      const n = active.length;
+      $("ghostCountLabel").textContent = n === 1 ? "1 ghost" : n + " ghosts";
+      const dots = $("presenceDots");
+      dots.innerHTML = "";
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        const s = document.createElement("span");
+        s.setAttribute("aria-hidden", "true");
+        dots.appendChild(s);
+      }
+      // Temperature
+      const recentMsgs = messageStore.filter(e => Math.floor(Date.now()/1000) - e.created_at < 90).length;
+      let temp = "COLD", pct = 12, cls = "cold";
+      if (n >= 5 || recentMsgs >= 8) { temp = "CHAOTIC"; pct = 100; cls = "chaotic"; }
+      else if (n >= 3 || recentMsgs >= 4) { temp = "HOT"; pct = 80; cls = "hot"; }
+      else if (n >= 2 || recentMsgs >= 2) { temp = "ACTIVE"; pct = 55; cls = "warm"; }
+      else if (recentMsgs >= 1) { temp = "WARM"; pct = 35; cls = "warm"; }
+      $("tempLabel").textContent = temp;
+      const fill = $("tempFill");
+      fill.style.width = pct + "%";
+      fill.className = "temp-fill " + cls;
+
+      // Last ghost
+      const banner = $("lastGhostBanner");
+      if (n === 1 && currentRoom) banner.classList.add("visible");
+      else banner.classList.remove("visible");
+    }
+
+    // ── Room lifecycle ───────────────────────────────────────
+    async function enterRoom(code, mode = "normal", secret = "", isCreator = false) {
+      code = (code || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+      if (!code || code.length < 5) {
+        console.warn("enterRoom: invalid code", code);
+        return;
+      }
+
       leaveRoom(false);
 
-      currentRoom = code;
-      currentCode.textContent = code;
-      lobby.classList.add("hidden");
-      inRoom.classList.remove("hidden");
-      msgInput.disabled = false;
-      btnSend.disabled = false;
-      emptyState.classList.add("hidden");
-      messagesEl.innerHTML = "";
+      currentRoom = {
+        code,
+        mode,
+        secret: secret || "",
+        createdAt: Date.now(),
+        isCreator,
+        speakerPk: isCreator && mode === "broadcast" ? pk : null
+      };
+
+      try {
+        roomKey = await deriveRoomKey(code, secret || "");
+      } catch (err) {
+        console.warn("Room key derivation failed, continuing without E2EE", err);
+        roomKey = null;
+      }
+
+      sessionStart = Date.now();
+      messagesSent = 0;
       seen.clear();
-      ghostMap.clear();
       messageStore = [];
       messageEls.clear();
-      activeGhosts.clear();
-      activeGhosts.add(pk);
+      presenceMap.clear();
+      touchPresence(pk);
 
-      coolGhostName(pk);
-      ghostIdEl.innerHTML = ghostMap.get(pk) + '<br><span style="font-size:0.7rem;opacity:0.7">' + pk.slice(0,8) + '…</span>';
-      updateGhostCount();
+      $("roomCodeDisplay").textContent = code;
+      $("modeTag").textContent = mode.toUpperCase();
+      $("ghostBadge").innerHTML = escapeHtml(ghostName) + '<div class="id">' + escapeHtml(ghostId) + "</div>";
+      $("msgInput").disabled = false;
+      $("btnSend").disabled = false;
 
-      updateURL(code);
+      // Safely reset messages without destroying the empty-state node
+      const msgs = $("messages");
+      const empty = $("emptyState");
+      while (msgs.firstChild) msgs.removeChild(msgs.firstChild);
+      if (empty) {
+        empty.classList.remove("hidden");
+        msgs.appendChild(empty);
+      }
+
+      try {
+        history.replaceState(null, "", location.pathname + "#r/" + code + (secret ? "/" + secret : ""));
+      } catch (_) {}
+
+      showScreen("room");
       subscribeRoom(code);
-      setStatus("in room " + code, true);
-      setTimeout(() => msgInput.focus(), 100);
+      updatePresenceUI();
+      setTimeout(() => { try { $("msgInput").focus(); } catch (_) {} }, 120);
       scheduleWhisper();
+      if (debugMode) updateDebug();
     }
 
-    function leaveRoom(ui = true) {
-      if (sub) { sub.close(); sub = null; }
+    function leaveRoom(showDeath = true) {
+      if (sub) { try { sub.close(); } catch {} sub = null; }
+      const stats = {
+        duration: sessionStart ? Math.floor((Date.now() - sessionStart) / 1000) : 0,
+        messages: messagesSent
+      };
       currentRoom = null;
-      if (ui) {
-        lobby.classList.remove("hidden");
-        inRoom.classList.add("hidden");
-        msgInput.disabled = true;
-        btnSend.disabled = true;
-        messagesEl.innerHTML = "";
-        emptyState.classList.remove("hidden");
-        messagesEl.appendChild(emptyState);
-        updateURL(null);
-        setStatus("ready · " + RELAYS.length + " relays", true);
-        typingEl.classList.remove("visible");
+      roomKey = null;
+      messageStore = [];
+      messageEls.clear();
+      presenceMap.clear();
+      seen.clear();
+      $("msgInput").value = "";
+      $("msgInput").disabled = true;
+      $("btnSend").disabled = true;
+      $("typingIndicator").classList.remove("visible");
+      history.replaceState(null, "", location.pathname);
+
+      if (showDeath) {
+        const m = Math.floor(stats.duration / 60);
+        const s = stats.duration % 60;
+        $("deathStats").innerHTML =
+          "SESSION: " + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0") + "<br>" +
+          "MESSAGES: " + stats.messages + "<br><br>" +
+          "TEMPORARY IDENTITY EXPIRED.<br>" +
+          "Your Ghostroom session has ended.";
+        showScreen("death");
       }
     }
 
     function subscribeRoom(code) {
       if (!pool) return;
+      if (sub) try { sub.close(); } catch {}
       sub = pool.subscribeMany(RELAYS, [{
-        kinds: [1],
+        kinds: [KIND_MSG],
         "#t": ["ghostroom"],
         "#r": [code],
-        limit: 50
+        limit: 40
       }], {
         onevent(ev) {
-          // Typing signal — ONLY show if it comes from someone else
-          if (ev.content === "…" && ev.tags.some(t => t[0] === "typing")) {
-            // Never show our own typing indicator
-            if (ev.pubkey === pk || myTypingIds.has(ev.id)) return;
-            showTypingFromOther();
-            return;
-          }
-
-          if (seen.has(ev.id) || isExpired(ev.created_at)) return;
-          seen.add(ev.id);
-          messageStore.push(ev);
-          activeGhosts.add(ev.pubkey);
-          updateGhostCount();
-          renderAll();
+          handleEvent(ev);
+        },
+        oneose() {
+          updateRelayHealth();
         }
       });
     }
 
-    // Send a very short-lived typing signal (only others will see it)
-    async function sendTypingSignal() {
-      if (!currentRoom || !sk) return;
-      const now = Date.now();
-      if (now - lastTypingSent < 2500) return; // rate limit
-      lastTypingSent = now;
+    async function handleEvent(ev) {
+      // Typing
+      if (ev.content === "…" || (ev.tags.some(t => t[0] === "typing"))) {
+        if (ev.pubkey === pk || myTypingIds.has(ev.id)) return;
+        showTyping();
+        touchPresence(ev.pubkey);
+        updatePresenceUI();
+        return;
+      }
 
-      const event = finalizeEvent({
-        kind: 1,
-        created_at: Math.floor(Date.now() / 1000),
-        tags: [
-          ["t", "ghostroom"],
-          ["r", currentRoom],
-          ["typing", "1"]
-        ],
-        content: "…"
-      }, sk);
+      if (seen.has(ev.id) || isExpired(ev.created_at)) return;
+      seen.add(ev.id);
 
-      try {
-        myTypingIds.add(event.id);
-        // clean old ids after a few seconds
-        setTimeout(() => myTypingIds.delete(event.id), 5000);
-        await Promise.any(pool.publish(RELAYS, event));
-      } catch (e) {}
+      // Decrypt if needed
+      let content = ev.content;
+      if (content.startsWith("g2:")) {
+        content = await decryptContent(content);
+      }
+
+      // Reaction detection
+      const isReaction = Object.values(REACTIONS).some(r => content === r) || content.startsWith("◈ ");
+
+      const enriched = { ...ev, content, isReaction };
+      messageStore.push(enriched);
+      touchPresence(ev.pubkey);
+      updatePresenceUI();
+      renderAll();
     }
 
-    function showTypingFromOther() {
-      typingEl.classList.add("visible");
+    function showTyping() {
+      $("typingIndicator").classList.add("visible");
       clearTimeout(typingClearTimer);
       typingClearTimer = setTimeout(() => {
-        typingEl.classList.remove("visible");
-      }, 2800);
+        $("typingIndicator").classList.remove("visible");
+      }, TYPING_TTL);
+    }
+
+    async function sendTyping() {
+      if (!currentRoom || !sk) return;
+      const now = Date.now();
+      if (now - lastTypingSent < 2200) return;
+      lastTypingSent = now;
+      const event = finalizeEvent({
+        kind: KIND_MSG,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [["t", "ghostroom"], ["r", currentRoom.code], ["typing", "1"]],
+        content: "…"
+      }, sk);
+      try {
+        myTypingIds.add(event.id);
+        setTimeout(() => myTypingIds.delete(event.id), 5000);
+        await Promise.any(pool.publish(RELAYS, event));
+      } catch {}
     }
 
     async function sendMessage(text) {
-      if (!currentRoom || !text.trim() || !sk) return;
+      if (!currentRoom || !sk) return;
+      text = text.trim();
+      if (!text) return;
+
+      // Rate limit
+      const now = Date.now();
+      if (now - lastSendTime < RATE_LIMIT_MS) {
+        addSystem("Slow down, ghost.");
+        return;
+      }
+      lastSendTime = now;
+
+      // Commands
+      if (text.startsWith("/")) {
+        handleCommand(text);
+        $("msgInput").value = "";
+        return;
+      }
+
+      if (text.length > MAX_MSG_LEN) {
+        addSystem("Message too long.");
+        return;
+      }
+
+      // Broadcast mode: only speaker can send (except reactions)
+      if (currentRoom.mode === "broadcast" && currentRoom.speakerPk && currentRoom.speakerPk !== pk) {
+        if (!text.startsWith("◈")) {
+          addSystem("Only the speaker may publish here.");
+          return;
+        }
+      }
+
+      // Solo / Two capacity checks are soft (enforced by presence awareness)
+
+      const ciphertext = await encryptContent(text);
       const event = finalizeEvent({
-        kind: 1,
+        kind: KIND_MSG,
         created_at: Math.floor(Date.now() / 1000),
-        tags: [["t", "ghostroom"], ["r", currentRoom]],
-        content: text.trim()
+        tags: [
+          ["t", "ghostroom"],
+          ["r", currentRoom.code],
+          ["gp", "0.2"],
+          ["mode", currentRoom.mode]
+        ],
+        content: ciphertext
       }, sk);
 
       try {
         await Promise.any(pool.publish(RELAYS, event));
         if (!seen.has(event.id)) {
           seen.add(event.id);
-          messageStore.push(event);
-          activeGhosts.add(pk);
-          updateGhostCount();
+          const enriched = { ...event, content: text, isReaction: text.startsWith("◈") };
+          messageStore.push(enriched);
+          touchPresence(pk);
+          messagesSent++;
+          updatePresenceUI();
           renderAll();
         }
-        msgInput.value = "";
-        msgInput.focus();
-        typingEl.classList.remove("visible");
+        $("msgInput").value = "";
+        $("msgInput").focus();
+        $("typingIndicator").classList.remove("visible");
       } catch (e) {
-        console.error(e);
-        alert("Failed to send. Relays may be unreachable.");
+        addSystem("THE GHOST NETWORK LOST CONTACT. Message not delivered.");
+        console.warn(e);
+      }
+    }
+
+    function handleCommand(cmd) {
+      const c = cmd.toLowerCase().trim();
+      if (c === "/vanish" || c === "/leave") {
+        leaveRoom(true);
+      } else if (c === "/help") {
+        addSystem("Commands: /vanish  /help  /echo  /understood  /silence  /vanish  /suspicious  /ghost");
+      } else if (c === "/ghost") {
+        addSystem(ghostName + " · " + ghostId + " · " + PROTOCOL);
+      } else if (c === "/void") {
+        addSystem("…");
+      } else if (c.startsWith("/echo") || c === "/echo") {
+        sendMessage(REACTIONS.echo);
+      } else if (c === "/understood") {
+        sendMessage(REACTIONS.understood);
+      } else if (c === "/silence") {
+        sendMessage(REACTIONS.silence);
+      } else if (c === "/suspicious") {
+        sendMessage(REACTIONS.suspicious);
+      } else {
+        addSystem("Unknown command. /help");
       }
     }
 
     function renderAll() {
       messageStore.sort((a, b) => a.created_at - b.created_at || a.id.localeCompare(b.id));
-      messagesEl.innerHTML = "";
+      const msgs = $("messages");
+      const empty = $("emptyState");
+      // Remove children without destroying the empty-state node if it is a child
+      while (msgs.firstChild) msgs.removeChild(msgs.firstChild);
       messageEls.clear();
+      let hasVisible = false;
       for (const ev of messageStore) {
-        if (!isExpired(ev.created_at)) renderOne(ev);
+        if (isExpired(ev.created_at)) continue;
+        hasVisible = true;
+        renderOne(ev);
       }
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      if (!hasVisible && empty) {
+        empty.classList.remove("hidden");
+        msgs.appendChild(empty);
+      } else if (empty) {
+        empty.classList.add("hidden");
+      }
+      msgs.scrollTop = msgs.scrollHeight;
     }
 
     function renderOne(ev) {
       const mine = ev.pubkey === pk;
-      const name = coolGhostName(ev.pubkey);
+      const name = coolName(ev.pubkey);
       const time = new Date(ev.created_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const remaining = Math.max(0, EXPIRE_SEC - (Math.floor(Date.now()/1000) - ev.created_at));
+      const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
+      const ss = String(remaining % 60).padStart(2, "0");
 
       const div = document.createElement("div");
-      div.className = "msg" + (mine ? " mine" : "");
+      div.className = "msg" + (mine ? " mine" : "") + (ev.isReaction ? " reaction" : "");
       div.dataset.created = ev.created_at;
-      div.innerHTML = '<div class="meta"><span class="name">' + name + '</span><span>' + time + '</span></div><div class="body"></div>';
-      div.querySelector(".body").textContent = ev.content;
-      messagesEl.appendChild(div);
+      div.dataset.id = ev.id;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "name";
+      nameSpan.textContent = name;
+      const timeSpan = document.createElement("span");
+      timeSpan.textContent = time;
+      meta.appendChild(nameSpan);
+      meta.appendChild(timeSpan);
+      if (!ev.isReaction) {
+        const exp = document.createElement("span");
+        exp.className = "expire";
+        exp.textContent = mm + ":" + ss;
+        meta.appendChild(exp);
+      }
+
+      const body = document.createElement("div");
+      body.className = "body";
+      body.textContent = ev.content; // safe: textContent only
+
+      div.appendChild(meta);
+      div.appendChild(body);
+      $("messages").appendChild(div);
       messageEls.set(ev.id, div);
     }
 
-    function addSystemWhisper(text) {
+    function addSystem(text) {
       const div = document.createElement("div");
       div.className = "msg system";
-      div.innerHTML = '<div class="body"></div>';
-      div.querySelector(".body").textContent = text;
-      messagesEl.appendChild(div);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      const body = document.createElement("div");
+      body.className = "body";
+      body.textContent = text;
+      div.appendChild(body);
+      $("messages").appendChild(div);
+      $("messages").scrollTop = $("messages").scrollHeight;
+      $("emptyState").classList.add("hidden");
     }
 
     function scheduleWhisper() {
       if (!currentRoom) return;
-      const delay = 50000 + Math.random() * 100000;
+      const delay = reducedMotion ? 90000 : (55000 + Math.random() * 90000);
       setTimeout(() => {
         if (!currentRoom) return;
         const now = Date.now();
-        if (now - lastWhisper > 45000) {
-          const w = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
-          addSystemWhisper(w);
+        if (now - lastWhisper > 50000) {
+          addSystem(WHISPERS[Math.floor(Math.random() * WHISPERS.length)]);
           lastWhisper = now;
         }
         scheduleWhisper();
@@ -805,70 +1420,227 @@
     function sweep() {
       const now = Math.floor(Date.now() / 1000);
       let changed = false;
-
-      // Silent fade then remove
       for (const [id, el] of [...messageEls]) {
         const age = now - parseInt(el.dataset.created, 10);
-        if (age > EXPIRE_AFTER) {
-          // already fully transparent → remove
+        if (age > EXPIRE_SEC) {
           el.remove();
           messageEls.delete(id);
           seen.delete(id);
           changed = true;
-        } else if (age > EXPIRE_AFTER - 12) {
-          // last 12 seconds → silent fade only
+        } else if (age > EXPIRE_SEC - 14) {
           el.classList.add("fading");
+        } else {
+          // update expire timer
+          const rem = EXPIRE_SEC - age;
+          const expEl = el.querySelector(".expire");
+          if (expEl) {
+            const mm = String(Math.floor(rem / 60)).padStart(2, "0");
+            const ss = String(rem % 60).padStart(2, "0");
+            expEl.textContent = mm + ":" + ss;
+          }
         }
       }
+      messageStore = messageStore.filter(ev => now - ev.created_at <= EXPIRE_SEC);
+      updatePresenceUI();
+      if (debugMode) updateDebug();
+    }
+    setInterval(sweep, 3000);
 
-      messageStore = messageStore.filter(ev => now - ev.created_at <= EXPIRE_AFTER);
-
-      if (changed) {
-        // no full re-render needed, we already removed
+    // ── Find a Ghost (public rooms) ──────────────────────────
+    // Without a central index we can only probe recent events.
+    // We look for recent ghostroom events and pick a room that is active.
+    async function findAGhost() {
+      if (!pool) return;
+      $("homeStats").textContent = "FINDING A ROOM…";
+      try {
+        const events = await pool.querySync(RELAYS, {
+          kinds: [KIND_MSG],
+          "#t": ["ghostroom"],
+          since: Math.floor(Date.now() / 1000) - 180,
+          limit: 30
+        });
+        const rooms = new Map();
+        for (const ev of events) {
+          const r = ev.tags.find(t => t[0] === "r");
+          if (r && r[1] && r[1].startsWith("GHOST-")) {
+            const code = r[1];
+            if (!rooms.has(code)) rooms.set(code, new Set());
+            rooms.get(code).add(ev.pubkey);
+          }
+        }
+        // Prefer rooms with 1–4 distinct recent ghosts
+        let candidates = [...rooms.entries()]
+          .filter(([, pks]) => pks.size >= 1 && pks.size <= 6)
+          .sort((a, b) => b[1].size - a[1].size);
+        if (candidates.length === 0) {
+          $("homeStats").textContent = "NO ACTIVE ROOMS FOUND. Create one?";
+          setTimeout(() => $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths", 3000);
+          return;
+        }
+        const [code, pks] = candidates[0];
+        $("homeStats").textContent = pks.size + " GHOST" + (pks.size > 1 ? "S" : "") + " DETECTED. ENTERING…";
+        await new Promise(r => setTimeout(r, 700));
+        enterRoom(code, "normal", "", false);
+      } catch (e) {
+        $("homeStats").textContent = "SEARCH FAILED. Try creating a room.";
+        console.warn(e);
       }
     }
-    setInterval(sweep, 4000);
 
-    // Typing: only send signal to others. Never show the indicator on our own screen.
-    msgInput.addEventListener("input", () => {
-      if (!currentRoom) return;
-      // IMPORTANT: do NOT call typingEl.classList.add here
-      sendTypingSignal();
-    });
+    // ── Debug ────────────────────────────────────────────────
+    function updateDebug() {
+      if (!debugMode) return;
+      const active = getActiveGhosts();
+      $("debug").textContent =
+        PROTOCOL + "\n" +
+        "Ghost: " + ghostId + " (" + ghostName + ")\n" +
+        "Room: " + (currentRoom ? currentRoom.code + " [" + currentRoom.mode + "]" : "none") + "\n" +
+        "Presence: " + active.length + "\n" +
+        "Messages in store: " + messageStore.length + "\n" +
+        "Relays healthy: " + healthyRelays.size + "/" + RELAYS.length + "\n" +
+        "Encryption: " + (roomKey ? "AES-GCM active" : "none") + "\n" +
+        "Subs: " + (sub ? "1" : "0");
+    }
 
-    $("btnCreate").onclick = () => enterRoom(randomRoomCode());
-    $("btnJoin").onclick = () => enterRoom($("joinCode").value);
-    $("joinCode").onkeydown = e => { if (e.key === "Enter") enterRoom($("joinCode").value); };
-    $("btnLeave").onclick = () => leaveRoom(true);
-    $("btnCopyLink").onclick = () => {
-      copyText(location.origin + location.pathname + "#room=" + currentRoom);
-      $("btnCopyLink").textContent = "Copied!";
-      setTimeout(() => $("btnCopyLink").textContent = "Copy invite link", 1500);
+    // ── UI bindings ──────────────────────────────────────────
+    $("btnFindGhost").onclick = () => findAGhost();
+    $("btnCreateRoom").onclick = () => {
+      $("createOverlay").classList.add("active");
     };
-    btnSend.onclick = () => sendMessage(msgInput.value);
-    msgInput.onkeydown = e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage(msgInput.value);
+    $("btnCancelCreate").onclick = () => $("createOverlay").classList.remove("active");
+    $("btnConfirmCreate").onclick = async () => {
+      const mode = document.querySelector('input[name="mode"]:checked')?.value || "normal";
+      $("createOverlay").classList.remove("active");
+      const code = randomCode();
+      // Non-normal modes get a short client-side secret for the invite link
+      let secret = "";
+      if (mode !== "normal") {
+        try {
+          secret = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+            .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 6);
+        } catch (_) {
+          secret = Math.random().toString(36).slice(2, 8);
+        }
+      }
+      try {
+        await enterRoom(code, mode, secret, true);
+      } catch (err) {
+        console.error("Failed to enter room", err);
+        showScreen("home");
+        $("homeStats").textContent = "Could not open room. Try again.";
       }
     };
-    $("bchAddress").onclick = () => {
-      copyText($("bchAddress").textContent);
-      $("bchAddress").style.borderColor = "var(--success)";
-      setTimeout(() => $("bchAddress").style.borderColor = "", 1000);
+    document.querySelectorAll(".mode-opt").forEach(lab => {
+      lab.onclick = () => {
+        document.querySelectorAll(".mode-opt").forEach(l => l.classList.remove("selected"));
+        lab.classList.add("selected");
+        lab.querySelector("input").checked = true;
+      };
+    });
+
+    $("btnEnterCode").onclick = () => {
+      $("joinOverlay").classList.add("active");
+      $("joinCodeInput").value = "";
+      setTimeout(() => $("joinCodeInput").focus(), 100);
+    };
+    $("btnCancelJoin").onclick = () => $("joinOverlay").classList.remove("active");
+    $("btnConfirmJoin").onclick = async () => {
+      const raw = $("joinCodeInput").value.trim();
+      $("joinOverlay").classList.remove("active");
+      if (!raw) return;
+      try {
+        await enterRoom(raw.toUpperCase(), "normal", "", false);
+      } catch (err) {
+        console.error("Failed to join room", err);
+        showScreen("home");
+        $("homeStats").textContent = "Could not join room. Try again.";
+      }
+    };
+    $("joinCodeInput").onkeydown = e => {
+      if (e.key === "Enter") $("btnConfirmJoin").click();
     };
 
-    initIdentity();
-    connectPool();
+    $("btnLeaveRoom").onclick = () => leaveRoom(true);
+    $("btnReturnHome").onclick = () => {
+      showScreen("home");
+      // New identity on return? Spec: session ends. We keep same identity until tab close for simplicity,
+      // but clear room state already happened.
+    };
+    $("logoHome").onclick = () => {
+      if (currentRoom) leaveRoom(true);
+      else showScreen("home");
+    };
 
-    if (location.hash.startsWith("#room=")) {
+    $("btnCopyInvite").onclick = async () => {
+      if (!currentRoom) return;
+      let link = location.origin + location.pathname + "#r/" + currentRoom.code;
+      if (currentRoom.secret) link += "/" + currentRoom.secret;
+      await copyText(link);
+      $("btnCopyInvite").textContent = "Copied!";
+      setTimeout(() => $("btnCopyInvite").textContent = "Copy invite link", 1600);
+    };
+
+    $("btnSend").onclick = () => sendMessage($("msgInput").value);
+    $("msgInput").onkeydown = e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage($("msgInput").value);
+      }
+    };
+    $("msgInput").addEventListener("input", () => {
+      if (currentRoom) sendTyping();
+    });
+
+    // Debug toggle: triple-click logo or ?debug=1
+    let clickCount = 0;
+    $("logoHome").addEventListener("click", () => {
+      clickCount++;
+      if (clickCount >= 5) {
+        debugMode = !debugMode;
+        $("debug").classList.toggle("visible", debugMode);
+        updateDebug();
+        clickCount = 0;
+      }
+      setTimeout(() => clickCount = 0, 800);
+    });
+    if (location.search.includes("debug")) {
+      debugMode = true;
+      $("debug").classList.add("visible");
+    }
+
+    // ── Boot ─────────────────────────────────────────────────
+    createIdentity();
+    connectPool();
+    runBirth();
+
+    // Deep link: #r/GHOST-XXXX or #r/GHOST-XXXX/secret
+    const hash = location.hash.slice(1);
+    if (hash.startsWith("r/")) {
+      const parts = hash.slice(2).split("/");
+      const code = parts[0];
+      const secret = parts[1] || "";
+      if (code) {
+        // Wait for birth to finish roughly
+        setTimeout(() => enterRoom(code.toUpperCase(), "normal", secret, false), reducedMotion ? 400 : 4200);
+      }
+    } else if (location.hash.startsWith("#room=")) {
+      // Backward compat with v1 links
       const code = location.hash.slice(6).toUpperCase();
-      if (code) enterRoom(code);
+      if (code) setTimeout(() => enterRoom(code, "normal", "", false), reducedMotion ? 400 : 4200);
     }
 
     window.addEventListener("beforeunload", () => {
-      if (sub) sub.close();
-      if (pool) pool.close(RELAYS);
+      if (sub) try { sub.close(); } catch {}
+      if (pool) try { pool.close(RELAYS); } catch {}
+      sk = null; // best-effort clear
+    });
+
+    // Keyboard accessibility
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        $("createOverlay").classList.remove("active");
+        $("joinOverlay").classList.remove("active");
+      }
     });
   </script>
 </body>
