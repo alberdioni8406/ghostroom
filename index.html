@@ -182,9 +182,35 @@
     .home-tag {
       font-size: 0.8rem;
       color: var(--muted);
-      margin-bottom: 1.6rem;
+      margin-bottom: 0.9rem;
       letter-spacing: 0.5px;
     }
+    .lang-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.1rem;
+    }
+    .lang-label {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .lang-select {
+      font-family: inherit;
+      font-size: 0.78rem;
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.35rem 0.55rem;
+      outline: none;
+      cursor: pointer;
+      max-width: 160px;
+    }
+    .lang-select:focus { border-color: var(--accent); }
     .home-actions {
       display: flex;
       flex-direction: column;
@@ -995,27 +1021,44 @@
   <div id="screen-home" class="screen">
     <div class="home-hero">
       <div class="home-logo">Ghost<span>room</span></div>
-      <div class="home-tag">ENTER WITHOUT A NAME.</div>
-      <div class="home-actions">
-        <button class="btn" id="btnCreateRoom">CREATE A ROOM</button>
-        <button class="btn secondary btn-bch" id="btnBchRooms">₿ BCH ROOMS</button>
-        <button class="btn secondary" id="btnEnterCode">ENTER A ROOM</button>
+      <div class="home-tag" data-i18n="home_tag">ENTER WITHOUT A NAME.</div>
+      <div class="lang-row">
+        <label for="langSelect" class="lang-label" data-i18n="language">Language</label>
+        <select id="langSelect" class="lang-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="fil">Filipino</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ar">العربية</option>
+          <option value="ru">Русский</option>
+          <option value="id">Indonesia</option>
+        </select>
       </div>
-      <div class="home-stats" id="homeStats">NETWORK · connecting…</div>
-      <p class="home-privacy">
+      <div class="home-actions">
+        <button class="btn" id="btnCreateRoom" data-i18n="create_room">CREATE A ROOM</button>
+        <button class="btn secondary btn-bch" id="btnBchRooms" data-i18n="bch_rooms">₿ BCH ROOMS</button>
+        <button class="btn secondary" id="btnEnterCode" data-i18n="enter_room">ENTER A ROOM</button>
+      </div>
+      <div class="home-stats" id="homeStats" data-i18n="network_connecting">NETWORK · connecting…</div>
+      <p class="home-privacy" data-i18n-html="home_privacy">
         No account. No permanent identity. Disposable key.<br>
         Client-side encryption. Nostr relay transport.<br>
         Temporary local session. Rooms die when empty.
       </p>
       <div class="donate-block">
-        <div class="donate-label">KEEP THE VOID ALIVE</div>
-        <p class="donate-msg">
+        <div class="donate-label" data-i18n="donate_label">KEEP THE VOID ALIVE</div>
+        <p class="donate-msg" data-i18n-html="donate_msg">
           Ghostroom stays free, single-file, and ownerless by design.<br>
           Relays, domains, and the occasional beer still cost something.<br>
           If this corner of the net matters to you — feed the ghost.
         </p>
         <code class="donate-addr" id="bchAddress" title="Click to copy">bitcoincash:qrlluw2ekm2zmp4qn52ashn4qt9xhhg405gcrzehu5</code>
-        <span class="donate-hint" id="bchHint">click to copy · BCH</span>
+        <span class="donate-hint" id="bchHint" data-i18n="copy_bch">click to copy · BCH</span>
       </div>
     </div>
   </div>
@@ -1057,9 +1100,9 @@
           <div class="presence-dots" id="presenceDots" aria-label="Ghost presence"></div>
         </div>
         <div class="last-ghost" id="lastGhostBanner">YOU ARE THE LAST GHOST.<br>When you leave, the room fades.</div>
-        <button class="secondary" id="btnCopyInvite">Copy invite link</button>
-        <button class="secondary" id="btnLeaveRoom">Leave room</button>
-        <p class="expire-note" id="expireNote" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
+        <button class="secondary" id="btnCopyInvite" data-i18n="copy_invite">Copy invite link</button>
+        <button class="secondary" id="btnLeaveRoom" data-i18n="leave_room">Leave room</button>
+        <p class="expire-note" id="expireNote" data-i18n-html="expire_note" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
           Messages fade after 5 min.<br>Session ends when you leave.
         </p>
 
@@ -1083,13 +1126,13 @@
         <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions">
           <div class="empty" id="emptyState">
             <div class="big">◈</div>
-            The room is quiet.<br>Speak as a ghost.
+            <span data-i18n-html="empty_room">The room is quiet.<br>Speak as a ghost.</span>
           </div>
         </div>
         <div class="typing" id="typingIndicator" aria-live="polite">◉ A ghost is writing…</div>
         <div class="compose">
-          <input type="text" id="msgInput" placeholder="Speak as a ghost…" disabled maxlength="800" autocomplete="off" aria-label="Message" />
-          <button id="btnSend" disabled>Send</button>
+          <input type="text" id="msgInput" placeholder="Speak as a ghost…" data-i18n-placeholder="speak_placeholder" disabled maxlength="800" autocomplete="off" aria-label="Message" />
+          <button id="btnSend" disabled data-i18n="send">Send</button>
         </div>
       </div>
     </div>
@@ -1198,9 +1241,9 @@
 
   <!-- Persistent founder tip — visible on every screen -->
   <div class="tip-bar" id="tipBar" role="contentinfo">
-    <span class="tip-bar-label">₿ SUPPORT THE FOUNDER</span>
+    <span class="tip-bar-label" data-i18n="support_founder">₿ SUPPORT THE FOUNDER</span>
     <code class="tip-bar-addr" id="tipBarAddr" title="Click to copy BCH address" tabindex="0">bitcoincash:qrlluw2ekm2zmp4qn52ashn4qt9xhhg405gcrzehu5</code>
-    <span class="tip-bar-hint" id="tipBarHint">tap to copy</span>
+    <span class="tip-bar-hint" id="tipBarHint" data-i18n="tap_to_copy">tap to copy</span>
   </div>
 
   <script type="module">
@@ -1216,6 +1259,481 @@
     // GHOST PROTOCOL v0.2 — Experimental ephemeral communication
     // ═══════════════════════════════════════════════════════════
     const PROTOCOL = "Ghost Protocol v0.2";
+
+    // ── i18n (UI only; does not change protocol) ──────────────
+    const I18N = {
+      en: {
+        language: "Language",
+        home_tag: "ENTER WITHOUT A NAME.",
+        create_room: "CREATE A ROOM",
+        bch_rooms: "₿ BCH ROOMS",
+        enter_room: "ENTER A ROOM",
+        network_connecting: "NETWORK · connecting…",
+        network_ready: "NETWORK · {n} relay paths",
+        home_privacy: "No account. No permanent identity. Disposable key.<br>Client-side encryption. Nostr relay transport.<br>Temporary local session. Rooms die when empty.",
+        donate_label: "KEEP THE VOID ALIVE",
+        donate_msg: "Ghostroom stays free, single-file, and ownerless by design.<br>Relays, domains, and the occasional beer still cost something.<br>If this corner of the net matters to you — feed the ghost.",
+        copy_bch: "click to copy · BCH",
+        copy_invite: "Copy invite link",
+        leave_room: "Leave room",
+        expire_note: "Messages fade after 5 min.<br>Session ends when you leave.",
+        empty_room: "The room is quiet.<br>Speak as a ghost.",
+        speak_placeholder: "Speak as a ghost…",
+        send: "Send",
+        support_founder: "₿ SUPPORT THE FOUNDER",
+        tap_to_copy: "tap to copy",
+        copied: "Copied!",
+        copied_thanks: "copied · thank you",
+        birth_init: "INITIALIZING…",
+        birth_identity: "creating temporary identity…",
+        birth_network: "connecting to ghost network…",
+        birth_created: "identity created.",
+        birth_arrived: "YOU HAVE ARRIVED.",
+        death_title: "YOUR GHOST HAS VANISHED.",
+        return_void: "Return to the void",
+        create_ghostroom: "CREATE GHOSTROOM",
+        cancel: "Cancel",
+        create: "Create"
+      },
+      pt: {
+        language: "Idioma",
+        home_tag: "ENTRE SEM UM NOME.",
+        create_room: "CRIAR UMA SALA",
+        bch_rooms: "₿ SALAS BCH",
+        enter_room: "ENTRAR NUMA SALA",
+        network_connecting: "REDE · a ligar…",
+        network_ready: "REDE · {n} caminhos de relay",
+        home_privacy: "Sem conta. Sem identidade permanente. Chave descartável.<br>Encriptação no cliente. Transporte Nostr.<br>Sessão local temporária. As salas morrem quando ficam vazias.",
+        donate_label: "MANTENHA O VAZIO VIVO",
+        donate_msg: "O Ghostroom continua gratuito, num só ficheiro e sem dono.<br>Relays, domínios e uma cerveja ocasional ainda custam algo.<br>Se este canto da rede importa para si — alimente o fantasma.",
+        copy_bch: "clique para copiar · BCH",
+        copy_invite: "Copiar convite",
+        leave_room: "Sair da sala",
+        expire_note: "Mensagens desaparecem após 5 min.<br>A sessão termina quando sai.",
+        empty_room: "A sala está quieta.<br>Fale como um fantasma.",
+        speak_placeholder: "Fale como um fantasma…",
+        send: "Enviar",
+        support_founder: "₿ APOIE O FUNDADOR",
+        tap_to_copy: "toque para copiar",
+        copied: "Copiado!",
+        copied_thanks: "copiado · obrigado",
+        birth_init: "A INICIALIZAR…",
+        birth_identity: "a criar identidade temporária…",
+        birth_network: "a ligar à rede fantasma…",
+        birth_created: "identidade criada.",
+        birth_arrived: "CHEGOU.",
+        death_title: "O SEU FANTASMA DESAPARECEU.",
+        return_void: "Voltar ao vazio",
+        create_ghostroom: "CRIAR GHOSTROOM",
+        cancel: "Cancelar",
+        create: "Criar"
+      },
+      es: {
+        language: "Idioma",
+        home_tag: "ENTRA SIN UN NOMBRE.",
+        create_room: "CREAR UNA SALA",
+        bch_rooms: "₿ SALAS BCH",
+        enter_room: "ENTRAR A UNA SALA",
+        network_connecting: "RED · conectando…",
+        network_ready: "RED · {n} rutas de relay",
+        home_privacy: "Sin cuenta. Sin identidad permanente. Clave desechable.<br>Cifrado en el cliente. Transporte Nostr.<br>Sesión local temporal. Las salas mueren cuando quedan vacías.",
+        donate_label: "MANTÉN EL VACÍO VIVO",
+        donate_msg: "Ghostroom sigue siendo gratis, un solo archivo y sin dueño.<br>Relays, dominios y una cerveza ocasional aún cuestan algo.<br>Si este rincón de la red te importa — alimenta al fantasma.",
+        copy_bch: "clic para copiar · BCH",
+        copy_invite: "Copiar invitación",
+        leave_room: "Salir de la sala",
+        expire_note: "Los mensajes desaparecen tras 5 min.<br>La sesión termina al salir.",
+        empty_room: "La sala está en silencio.<br>Habla como un fantasma.",
+        speak_placeholder: "Habla como un fantasma…",
+        send: "Enviar",
+        support_founder: "₿ APOYA AL FUNDADOR",
+        tap_to_copy: "toca para copiar",
+        copied: "¡Copiado!",
+        copied_thanks: "copiado · gracias",
+        birth_init: "INICIALIZANDO…",
+        birth_identity: "creando identidad temporal…",
+        birth_network: "conectando a la red fantasma…",
+        birth_created: "identidad creada.",
+        birth_arrived: "HAS LLEGADO.",
+        death_title: "TU FANTASMA HA DESAPARECIDO.",
+        return_void: "Volver al vacío",
+        create_ghostroom: "CREAR GHOSTROOM",
+        cancel: "Cancelar",
+        create: "Crear"
+      },
+      de: {
+        language: "Sprache",
+        home_tag: "OHNE NAMEN EINTRETEN.",
+        create_room: "RAUM ERSTELLEN",
+        bch_rooms: "₿ BCH-RÄUME",
+        enter_room: "RAUM BETRETEN",
+        network_connecting: "NETZ · verbinde…",
+        network_ready: "NETZ · {n} Relay-Pfade",
+        home_privacy: "Kein Konto. Keine permanente Identität. Einmaliger Schlüssel.<br>Client-seitige Verschlüsselung. Nostr-Transport.<br>Temporäre lokale Sitzung. Räume sterben, wenn sie leer sind.",
+        donate_label: "HALTE DIE LEERE AM LEBEN",
+        donate_msg: "Ghostroom bleibt kostenlos, eine Datei, ohne Besitzer.<br>Relays, Domains und gelegentlich ein Bier kosten trotzdem etwas.<br>Wenn dir diese Ecke des Netzes wichtig ist — füttere den Geist.",
+        copy_bch: "klicken zum Kopieren · BCH",
+        copy_invite: "Einladungslink kopieren",
+        leave_room: "Raum verlassen",
+        expire_note: "Nachrichten verblassen nach 5 Min.<br>Sitzung endet beim Verlassen.",
+        empty_room: "Der Raum ist still.<br>Sprich als Geist.",
+        speak_placeholder: "Sprich als Geist…",
+        send: "Senden",
+        support_founder: "₿ UNTERSTÜTZE DEN GRÜNDER",
+        tap_to_copy: "tippen zum Kopieren",
+        copied: "Kopiert!",
+        copied_thanks: "kopiert · danke",
+        birth_init: "INITIALISIERE…",
+        birth_identity: "temporäre Identität wird erstellt…",
+        birth_network: "verbinde mit Geisternetz…",
+        birth_created: "Identität erstellt.",
+        birth_arrived: "DU BIST ANGEKOMMEN.",
+        death_title: "DEIN GEIST IST VERSCHWUNDEN.",
+        return_void: "Zurück in die Leere",
+        create_ghostroom: "GHOSTROOM ERSTELLEN",
+        cancel: "Abbrechen",
+        create: "Erstellen"
+      },
+      fr: {
+        language: "Langue",
+        home_tag: "ENTREZ SANS NOM.",
+        create_room: "CRÉER UNE SALLE",
+        bch_rooms: "₿ SALLES BCH",
+        enter_room: "ENTRER DANS UNE SALLE",
+        network_connecting: "RÉSEAU · connexion…",
+        network_ready: "RÉSEAU · {n} chemins de relay",
+        home_privacy: "Pas de compte. Pas d'identité permanente. Clé jetable.<br>Chiffrement côté client. Transport Nostr.<br>Session locale temporaire. Les salles meurent quand elles sont vides.",
+        donate_label: "GARDEZ LE VIDE VIVANT",
+        donate_msg: "Ghostroom reste gratuit, un seul fichier, sans propriétaire.<br>Relays, domaines et une bière de temps en temps coûtent encore quelque chose.<br>Si ce coin du net vous importe — nourrissez le fantôme.",
+        copy_bch: "cliquer pour copier · BCH",
+        copy_invite: "Copier l'invitation",
+        leave_room: "Quitter la salle",
+        expire_note: "Les messages disparaissent après 5 min.<br>La session se termine à la sortie.",
+        empty_room: "La salle est calme.<br>Parlez en fantôme.",
+        speak_placeholder: "Parlez en fantôme…",
+        send: "Envoyer",
+        support_founder: "₿ SOUTENIR LE FONDATEUR",
+        tap_to_copy: "appuyer pour copier",
+        copied: "Copié !",
+        copied_thanks: "copié · merci",
+        birth_init: "INITIALISATION…",
+        birth_identity: "création d'identité temporaire…",
+        birth_network: "connexion au réseau fantôme…",
+        birth_created: "identité créée.",
+        birth_arrived: "VOUS ÊTES ARRIVÉ.",
+        death_title: "VOTRE FANTÔME A DISPARU.",
+        return_void: "Retourner au vide",
+        create_ghostroom: "CRÉER GHOSTROOM",
+        cancel: "Annuler",
+        create: "Créer"
+      },
+      zh: {
+        language: "语言",
+        home_tag: "无需名字即可进入。",
+        create_room: "创建房间",
+        bch_rooms: "₿ BCH 房间",
+        enter_room: "进入房间",
+        network_connecting: "网络 · 连接中…",
+        network_ready: "网络 · {n} 条中继路径",
+        home_privacy: "无需账户。无永久身份。一次性密钥。<br>客户端加密。Nostr 传输。<br>临时本地会话。空房间会消亡。",
+        donate_label: "让虚空继续存在",
+        donate_msg: "Ghostroom 保持免费、单文件、无所有者。<br>中继、域名和偶尔一杯啤酒仍需成本。<br>若你在意这个角落——请喂养幽灵。",
+        copy_bch: "点击复制 · BCH",
+        copy_invite: "复制邀请链接",
+        leave_room: "离开房间",
+        expire_note: "消息 5 分钟后消失。<br>离开即结束会话。",
+        empty_room: "房间很安静。<br>以幽灵身份说话。",
+        speak_placeholder: "以幽灵身份说话…",
+        send: "发送",
+        support_founder: "₿ 支持创始人",
+        tap_to_copy: "点击复制",
+        copied: "已复制！",
+        copied_thanks: "已复制 · 谢谢",
+        birth_init: "初始化中…",
+        birth_identity: "正在创建临时身份…",
+        birth_network: "正在连接幽灵网络…",
+        birth_created: "身份已创建。",
+        birth_arrived: "你已抵达。",
+        death_title: "你的幽灵已消失。",
+        return_void: "返回虚空",
+        create_ghostroom: "创建 GHOSTROOM",
+        cancel: "取消",
+        create: "创建"
+      },
+      ja: {
+        language: "言語",
+        home_tag: "名前なしで入る。",
+        create_room: "ルームを作成",
+        bch_rooms: "₿ BCHルーム",
+        enter_room: "ルームに入る",
+        network_connecting: "ネットワーク · 接続中…",
+        network_ready: "ネットワーク · リレー {n} 経路",
+        home_privacy: "アカウント不要。永続IDなし。使い捨て鍵。<br>クライアント側暗号化。Nostr転送。<br>一時的なローカルセッション。空の部屋は消える。",
+        donate_label: "虚空を生かし続けよう",
+        donate_msg: "Ghostroomは無料・単一ファイル・所有者なしのまま。<br>リレーやドメイン、時々の一杯にはまだ費用がかかる。<br>この片隅が大切なら——ゴーストを支えて。",
+        copy_bch: "タップしてコピー · BCH",
+        copy_invite: "招待リンクをコピー",
+        leave_room: "ルームを出る",
+        expire_note: "メッセージは5分で消える。<br>退出でセッション終了。",
+        empty_room: "部屋は静かだ。<br>ゴーストとして話せ。",
+        speak_placeholder: "ゴーストとして話す…",
+        send: "送信",
+        support_founder: "₿ 創設者を支援",
+        tap_to_copy: "タップしてコピー",
+        copied: "コピーした！",
+        copied_thanks: "コピー済み · ありがとう",
+        birth_init: "初期化中…",
+        birth_identity: "一時的なIDを作成中…",
+        birth_network: "ゴーストネットワークに接続中…",
+        birth_created: "IDを作成した。",
+        birth_arrived: "到着した。",
+        death_title: "あなたのゴーストは消えた。",
+        return_void: "虚空へ戻る",
+        create_ghostroom: "GHOSTROOMを作成",
+        cancel: "キャンセル",
+        create: "作成"
+      },
+      fil: {
+        language: "Wika",
+        home_tag: "PUMASOK NANG WALANG PANGALAN.",
+        create_room: "GUMAWANG SILID",
+        bch_rooms: "₿ MGA BCH ROOM",
+        enter_room: "PUMASOK SA SILID",
+        network_connecting: "NETWORK · kumokonekta…",
+        network_ready: "NETWORK · {n} relay paths",
+        home_privacy: "Walang account. Walang permanenteng identity. Disposable key.<br>Client-side encryption. Nostr transport.<br>Pansamantalang local session. Namamatay ang room kapag walang laman.",
+        donate_label: "PANATILIHING BUHAY ANG VOID",
+        donate_msg: "Libre pa rin ang Ghostroom, iisang file, walang may-ari.<br>May gastos pa rin ang relays, domains, at paminsan-minsang beer.<br>Kung mahalaga sa'yo ang sulok na ito — pakainin ang ghost.",
+        copy_bch: "i-click para kopyahin · BCH",
+        copy_invite: "Kopyahin ang invite",
+        leave_room: "Umalis sa room",
+        expire_note: "Nawawala ang mensahe pagkatapos ng 5 min.<br>Nagtatapos ang session kapag umalis ka.",
+        empty_room: "Tahimik ang room.<br>Magsalita bilang ghost.",
+        speak_placeholder: "Magsalita bilang ghost…",
+        send: "Ipadala",
+        support_founder: "₿ SUPORTAHAN ANG FOUNDER",
+        tap_to_copy: "i-tap para kopyahin",
+        copied: "Nakopya!",
+        copied_thanks: "nakopya · salamat",
+        birth_init: "NAGSISIMULA…",
+        birth_identity: "gumagawa ng pansamantalang identity…",
+        birth_network: "kumokonekta sa ghost network…",
+        birth_created: "nalikha ang identity.",
+        birth_arrived: "DUMATING KA NA.",
+        death_title: "NAWALA ANG IYONG GHOST.",
+        return_void: "Bumalik sa void",
+        create_ghostroom: "GUMAWA NG GHOSTROOM",
+        cancel: "Kanselahin",
+        create: "Gumawa"
+      },
+      hi: {
+        language: "भाषा",
+        home_tag: "बिना नाम के प्रवेश करें।",
+        create_room: "कमरा बनाएँ",
+        bch_rooms: "₿ BCH कमरे",
+        enter_room: "कमरे में जाएँ",
+        network_connecting: "नेटवर्क · जुड़ रहा है…",
+        network_ready: "नेटवर्क · {n} रिले पथ",
+        home_privacy: "कोई खाता नहीं। कोई स्थायी पहचान नहीं। अस्थायी कुंजी।<br>क्लाइंट-साइड एन्क्रिप्शन। Nostr ट्रांसपोर्ट।<br>अस्थायी स्थानीय सत्र। खाली कमरे समाप्त हो जाते हैं।",
+        donate_label: "शून्य को जीवित रखें",
+        donate_msg: "Ghostroom मुफ़्त, एकल फ़ाइल और बिना मालिक के रहता है।<br>रिले, डोमेन और कभी-कभी एक बीयर की लागत अभी भी है।<br>यदि यह कोना महत्वपूर्ण है — भूत को खिलाएँ।",
+        copy_bch: "कॉपी करने के लिए क्लिक · BCH",
+        copy_invite: "आमंत्रण कॉपी करें",
+        leave_room: "कमरा छोड़ें",
+        expire_note: "संदेश 5 मिनट बाद गायब।<br>छोड़ने पर सत्र समाप्त।",
+        empty_room: "कमरा शांत है।<br>भूत की तरह बोलें।",
+        speak_placeholder: "भूत की तरह बोलें…",
+        send: "भेजें",
+        support_founder: "₿ संस्थापक का समर्थन करें",
+        tap_to_copy: "कॉपी करने के लिए टैप",
+        copied: "कॉपी हो गया!",
+        copied_thanks: "कॉपी · धन्यवाद",
+        birth_init: "आरंभ…",
+        birth_identity: "अस्थायी पहचान बनाई जा रही है…",
+        birth_network: "भूत नेटवर्क से जुड़ रहा है…",
+        birth_created: "पहचान बनी।",
+        birth_arrived: "आप पहुँच गए।",
+        death_title: "आपका भूत गायब हो गया।",
+        return_void: "शून्य पर लौटें",
+        create_ghostroom: "GHOSTROOM बनाएँ",
+        cancel: "रद्द",
+        create: "बनाएँ"
+      },
+      ar: {
+        language: "اللغة",
+        home_tag: "ادخل بلا اسم.",
+        create_room: "إنشاء غرفة",
+        bch_rooms: "₿ غرف BCH",
+        enter_room: "دخول غرفة",
+        network_connecting: "الشبكة · جارٍ الاتصال…",
+        network_ready: "الشبكة · {n} مسارات ريلاي",
+        home_privacy: "لا حساب. لا هوية دائمة. مفتاح مؤقت.<br>تشفير من جهة العميل. نقل Nostr.<br>جلسة محلية مؤقتة. الغرف تموت عندما تفرغ.",
+        donate_label: "أبقِ الفراغ حيًا",
+        donate_msg: "يبقى Ghostroom مجانيًا وملفًا واحدًا بلا مالك.<br>الريلايات والنطاقات وأحيانًا مشروب ما زالت تكلف شيئًا.<br>إن كان هذا الركن يهمك — أطعم الشبح.",
+        copy_bch: "انقر للنسخ · BCH",
+        copy_invite: "نسخ الدعوة",
+        leave_room: "مغادرة الغرفة",
+        expire_note: "تختفي الرسائل بعد 5 دقائق.<br>تنتهي الجلسة عند المغادرة.",
+        empty_room: "الغرفة هادئة.<br>تكلم كشبح.",
+        speak_placeholder: "تكلم كشبح…",
+        send: "إرسال",
+        support_founder: "₿ ادعم المؤسس",
+        tap_to_copy: "انقر للنسخ",
+        copied: "تم النسخ!",
+        copied_thanks: "تم النسخ · شكرًا",
+        birth_init: "جارٍ التهيئة…",
+        birth_identity: "إنشاء هوية مؤقتة…",
+        birth_network: "الاتصال بشبكة الأشباح…",
+        birth_created: "تم إنشاء الهوية.",
+        birth_arrived: "لقد وصلت.",
+        death_title: "اختفى شبحك.",
+        return_void: "العودة إلى الفراغ",
+        create_ghostroom: "إنشاء GHOSTROOM",
+        cancel: "إلغاء",
+        create: "إنشاء"
+      },
+      ru: {
+        language: "Язык",
+        home_tag: "ВОЙДИТЕ БЕЗ ИМЕНИ.",
+        create_room: "СОЗДАТЬ КОМНАТУ",
+        bch_rooms: "₿ BCH КОМНАТЫ",
+        enter_room: "ВОЙТИ В КОМНАТУ",
+        network_connecting: "СЕТЬ · подключение…",
+        network_ready: "СЕТЬ · {n} путей реле",
+        home_privacy: "Без аккаунта. Без постоянного профиля. Временный ключ.<br>Шифрование на клиенте. Транспорт Nostr.<br>Временная локальная сессия. Пустые комнаты умирают.",
+        donate_label: "СОХРАНИТЕ ПУСТОТУ ЖИВОЙ",
+        donate_msg: "Ghostroom остаётся бесплатным, одним файлом и без владельца.<br>Релеи, домены и иногда пиво всё ещё чего-то стоят.<br>Если этот угол сети важен — накормите призрака.",
+        copy_bch: "нажмите, чтобы скопировать · BCH",
+        copy_invite: "Скопировать приглашение",
+        leave_room: "Покинуть комнату",
+        expire_note: "Сообщения исчезают через 5 мин.<br>Сессия заканчивается при выходе.",
+        empty_room: "В комнате тихо.<br>Говорите как призрак.",
+        speak_placeholder: "Говорите как призрак…",
+        send: "Отправить",
+        support_founder: "₿ ПОДДЕРЖАТЬ ОСНОВАТЕЛЯ",
+        tap_to_copy: "нажмите, чтобы скопировать",
+        copied: "Скопировано!",
+        copied_thanks: "скопировано · спасибо",
+        birth_init: "ИНИЦИАЛИЗАЦИЯ…",
+        birth_identity: "создание временной личности…",
+        birth_network: "подключение к сети призраков…",
+        birth_created: "личность создана.",
+        birth_arrived: "ВЫ ПРИБЫЛИ.",
+        death_title: "ВАШ ПРИЗРАК ИСЧЕЗ.",
+        return_void: "Вернуться в пустоту",
+        create_ghostroom: "СОЗДАТЬ GHOSTROOM",
+        cancel: "Отмена",
+        create: "Создать"
+      },
+      id: {
+        language: "Bahasa",
+        home_tag: "MASUK TANPA NAMA.",
+        create_room: "BUAT RUANGAN",
+        bch_rooms: "₿ RUANG BCH",
+        enter_room: "MASUK RUANGAN",
+        network_connecting: "JARINGAN · menghubungkan…",
+        network_ready: "JARINGAN · {n} jalur relay",
+        home_privacy: "Tanpa akun. Tanpa identitas permanen. Kunci sekali pakai.<br>Enkripsi di klien. Transport Nostr.<br>Sesi lokal sementara. Ruangan mati saat kosong.",
+        donate_label: "JAGA VOID TETAP HIDUP",
+        donate_msg: "Ghostroom tetap gratis, satu file, tanpa pemilik.<br>Relay, domain, dan sesekali bir masih butuh biaya.<br>Jika sudut net ini penting bagimu — beri makan hantu.",
+        copy_bch: "klik untuk salin · BCH",
+        copy_invite: "Salin undangan",
+        leave_room: "Keluar ruangan",
+        expire_note: "Pesan hilang setelah 5 mnt.<br>Sesi berakhir saat keluar.",
+        empty_room: "Ruangan sunyi.<br>Bicara sebagai hantu.",
+        speak_placeholder: "Bicara sebagai hantu…",
+        send: "Kirim",
+        support_founder: "₿ DUKUNG PENDIRI",
+        tap_to_copy: "ketuk untuk salin",
+        copied: "Disalin!",
+        copied_thanks: "disalin · terima kasih",
+        birth_init: "MENYIAPKAN…",
+        birth_identity: "membuat identitas sementara…",
+        birth_network: "menghubungkan ke jaringan hantu…",
+        birth_created: "identitas dibuat.",
+        birth_arrived: "ANDA TELAH TIBA.",
+        death_title: "HANTU ANDA HILANG.",
+        return_void: "Kembali ke void",
+        create_ghostroom: "BUAT GHOSTROOM",
+        cancel: "Batal",
+        create: "Buat"
+      }
+    };
+
+    let currentLang = "en";
+    try {
+      const saved = localStorage.getItem("ghostroom_lang");
+      if (saved && I18N[saved]) currentLang = saved;
+      else {
+        const nav = (navigator.language || "en").toLowerCase();
+        if (nav.startsWith("pt")) currentLang = "pt";
+        else if (nav.startsWith("es")) currentLang = "es";
+        else if (nav.startsWith("de")) currentLang = "de";
+        else if (nav.startsWith("fr")) currentLang = "fr";
+        else if (nav.startsWith("zh")) currentLang = "zh";
+        else if (nav.startsWith("ja")) currentLang = "ja";
+        else if (nav.startsWith("fil") || nav.startsWith("tl")) currentLang = "fil";
+        else if (nav.startsWith("hi")) currentLang = "hi";
+        else if (nav.startsWith("ar")) currentLang = "ar";
+        else if (nav.startsWith("ru")) currentLang = "ru";
+        else if (nav.startsWith("id")) currentLang = "id";
+      }
+    } catch (_) {}
+
+    function t(key, vars) {
+      const pack = I18N[currentLang] || I18N.en;
+      let s = pack[key] != null ? pack[key] : (I18N.en[key] || key);
+      if (vars) {
+        Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]); });
+      }
+      return s;
+    }
+
+    function applyLanguage(lang) {
+      if (lang && I18N[lang]) currentLang = lang;
+      try { localStorage.setItem("ghostroom_lang", currentLang); } catch (_) {}
+      document.documentElement.lang = currentLang === "zh" ? "zh-CN" : currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key) el.textContent = t(key);
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(el => {
+        const key = el.getAttribute("data-i18n-html");
+        if (key) el.innerHTML = t(key);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (key) el.setAttribute("placeholder", t(key));
+      });
+
+      const sel = document.getElementById("langSelect");
+      if (sel) sel.value = currentLang;
+
+      // A few elements without data attrs
+      const deathH = document.querySelector("#screen-death h1");
+      if (deathH) deathH.textContent = t("death_title");
+      const retBtn = document.getElementById("btnReturnHome");
+      if (retBtn) retBtn.textContent = t("return_void");
+      const createTitle = document.getElementById("createTitle");
+      if (createTitle) createTitle.textContent = t("create_ghostroom");
+      const btnConfirmCreate = document.getElementById("btnConfirmCreate");
+      if (btnConfirmCreate) btnConfirmCreate.textContent = t("create");
+      const btnCancelCreate = document.getElementById("btnCancelCreate");
+      if (btnCancelCreate) btnCancelCreate.textContent = t("cancel");
+      const btnCancelJoin = document.getElementById("btnCancelJoin");
+      if (btnCancelJoin) btnCancelJoin.textContent = t("cancel");
+      const btnConfirmJoin = document.getElementById("btnConfirmJoin");
+      if (btnConfirmJoin) btnConfirmJoin.textContent = t("enter_room");
+      const btnCancelBch = document.getElementById("btnCancelBch");
+      if (btnCancelBch) btnCancelBch.textContent = t("cancel");
+      const btnConfirmBch = document.getElementById("btnConfirmBch");
+      if (btnConfirmBch) btnConfirmBch.textContent = t("bch_rooms").replace("₿ ", "") ? t("create") + " BCH" : t("create");
+      if (btnConfirmBch) btnConfirmBch.textContent = t("create") + " BCH";
+      const joinTitle = document.querySelector("#joinOverlay h3");
+      if (joinTitle) joinTitle.textContent = t("enter_room");
+    }
     const KIND_MSG = 1;
     const KIND_META = 30078; // replaceable for room meta (experimental)
     const EXPIRE_SEC_DEFAULT = 5 * 60;
@@ -1401,7 +1919,7 @@
       pool = new SimplePool();
       healthyRelays = new Set(RELAYS);
       setNetStatus("ready · " + RELAYS.length + " paths", "live");
-      $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths";
+      $("homeStats").textContent = t("network_ready", { n: RELAYS.length });
     }
 
     function updateRelayHealth() {
@@ -1427,13 +1945,13 @@
       log.innerHTML = "";
       const lines = [
         { t: "GHOSTROOM", cls: "accent", delay: 0 },
-        { t: "INITIALIZING…", delay: 400 },
-        { t: "creating temporary identity…", delay: 900 },
-        { t: "connecting to ghost network…", delay: 1400 },
-        { t: "identity created.", delay: 2000 },
+        { t: t("birth_init"), delay: 400 },
+        { t: t("birth_identity"), delay: 900 },
+        { t: t("birth_network"), delay: 1400 },
+        { t: t("birth_created"), delay: 2000 },
         { t: ghostName, cls: "ghost-name", delay: 2400 },
         { t: ghostId, cls: "ghost-id", delay: 2600 },
-        { t: "YOU HAVE ARRIVED.", cls: "accent", delay: 3100 }
+        { t: t("birth_arrived"), cls: "accent", delay: 3100 }
       ];
       for (const line of lines) {
         await new Promise(r => setTimeout(r, reducedMotion ? 50 : line.delay - (lines.indexOf(line) > 0 ? lines[lines.indexOf(line)-1].delay : 0)));
@@ -1444,6 +1962,7 @@
       }
       await new Promise(r => setTimeout(r, reducedMotion ? 200 : 900));
       showScreen("home");
+      applyLanguage(currentLang);
     }
 
     // ── Presence & Temperature ───────────────────────────────
@@ -2150,16 +2669,16 @@
       let link = location.origin + location.pathname + "#r/" + currentRoom.code;
       if (currentRoom.secret) link += "/" + currentRoom.secret;
       await copyText(link);
-      $("btnCopyInvite").textContent = "Copied!";
-      setTimeout(() => $("btnCopyInvite").textContent = "Copy invite link", 1600);
+      $("btnCopyInvite").textContent = t("copied");
+      setTimeout(() => $("btnCopyInvite").textContent = t("copy_invite"), 1600);
     };
 
     $("bchAddress").onclick = async () => {
       await copyText($("bchAddress").textContent.trim());
-      $("bchHint").textContent = "copied · thank you, ghost";
+      $("bchHint").textContent = t("copied_thanks");
       $("bchAddress").style.borderColor = "var(--success)";
       setTimeout(() => {
-        $("bchHint").textContent = "click to copy · BCH";
+        $("bchHint").textContent = t("copy_bch");
         $("bchAddress").style.borderColor = "";
       }, 1800);
     };
@@ -2168,10 +2687,10 @@
     const copyFounderAddr = async () => {
       const addr = ($("tipBarAddr") && $("tipBarAddr").textContent.trim()) || BCH_FOUNDER_ADDR;
       await copyText(addr);
-      if ($("tipBarHint")) $("tipBarHint").textContent = "copied · thank you";
+      if ($("tipBarHint")) $("tipBarHint").textContent = t("copied_thanks");
       if ($("tipBarAddr")) $("tipBarAddr").style.color = "var(--bch)";
       setTimeout(() => {
-        if ($("tipBarHint")) $("tipBarHint").textContent = "tap to copy";
+        if ($("tipBarHint")) $("tipBarHint").textContent = t("tap_to_copy");
         if ($("tipBarAddr")) $("tipBarAddr").style.color = "";
       }, 1800);
     };
@@ -2211,6 +2730,12 @@
     }
 
     // ── Boot ─────────────────────────────────────────────────
+    applyLanguage(currentLang);
+    const langSelect = $("langSelect");
+    if (langSelect) {
+      langSelect.value = currentLang;
+      langSelect.onchange = () => applyLanguage(langSelect.value);
+    }
     createIdentity();
     connectPool();
     runBirth();
