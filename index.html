@@ -1079,16 +1079,16 @@
     <div class="room-body">
       <div class="panel" id="sidePanel">
         <div>
-          <h2>Your ghost</h2>
+          <h2 data-i18n="your_ghost">Your ghost</h2>
           <div class="ghost-badge" id="ghostBadge">—</div>
         </div>
         <div>
-          <h2>Room</h2>
+          <h2 data-i18n="room">Room</h2>
           <div class="room-code" id="roomCodeDisplay">—</div>
         </div>
         <div class="mode-tag" id="modeTag">NORMAL</div>
         <div>
-          <h2>Temperature</h2>
+          <h2 data-i18n="temperature">Temperature</h2>
           <div class="meta-row">
             <span id="tempLabel">COLD</span>
             <span id="ghostCountLabel">1 ghost</span>
@@ -1096,10 +1096,10 @@
           <div class="temp-bar"><div class="temp-fill cold" id="tempFill" style="width:15%"></div></div>
         </div>
         <div>
-          <h2>Presence</h2>
+          <h2 data-i18n="presence">Presence</h2>
           <div class="presence-dots" id="presenceDots" aria-label="Ghost presence"></div>
         </div>
-        <div class="last-ghost" id="lastGhostBanner">YOU ARE THE LAST GHOST.<br>When you leave, the room fades.</div>
+        <div class="last-ghost" id="lastGhostBanner" data-i18n-html="last_ghost">YOU ARE THE LAST GHOST.<br>When you leave, the room fades.</div>
         <button class="secondary" id="btnCopyInvite" data-i18n="copy_invite">Copy invite link</button>
         <button class="secondary" id="btnLeaveRoom" data-i18n="leave_room">Leave room</button>
         <p class="expire-note" id="expireNote" data-i18n-html="expire_note" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
@@ -1108,15 +1108,15 @@
 
         <!-- BCH Rooms panel (hidden unless in a BCH room) -->
         <div class="bch-panel" id="bchPanel">
-          <h2>₿ BCH Room</h2>
+          <h2 data-i18n="bch_room_panel">₿ BCH Room</h2>
           <div class="bch-role-tag" id="bchRoleTag">Ghost</div>
           <div class="bch-countdown" id="bchCountdown"></div>
           <div class="bch-qr" id="bchQr" title="Scan to join or transfer ghost"></div>
-          <div class="bch-meta" id="bchMeta">QR · Ghost Transfer · Invite</div>
+          <div class="bch-meta" id="bchMeta" data-i18n="bch_meta">QR · Ghost Transfer · Invite</div>
           <div class="bch-tools" id="bchTools">
-            <button type="button" id="btnBchCopyAddr" title="Copy room tip address">Copy BCH</button>
-            <button type="button" id="btnBchRegenQr">Regen QR</button>
-            <button type="button" id="btnBchBurn" class="danger">Burn</button>
+            <button type="button" id="btnBchCopyAddr" data-i18n="copy_bch_btn" title="Copy room tip address">Copy BCH</button>
+            <button type="button" id="btnBchRegenQr" data-i18n="regen_qr">Regen QR</button>
+            <button type="button" id="btnBchBurn" class="danger" data-i18n="burn">Burn</button>
           </div>
           <div class="bch-meta" id="bchPresenceRoles"></div>
         </div>
@@ -1129,7 +1129,7 @@
             <span data-i18n-html="empty_room">The room is quiet.<br>Speak as a ghost.</span>
           </div>
         </div>
-        <div class="typing" id="typingIndicator" aria-live="polite">◉ A ghost is writing…</div>
+        <div class="typing" id="typingIndicator" aria-live="polite" data-i18n="typing">◉ A ghost is writing…</div>
         <div class="compose">
           <input type="text" id="msgInput" placeholder="Speak as a ghost…" data-i18n-placeholder="speak_placeholder" disabled maxlength="800" autocomplete="off" aria-label="Message" />
           <button id="btnSend" disabled data-i18n="send">Send</button>
@@ -1141,97 +1141,97 @@
   <!-- DEATH -->
   <div id="screen-death" class="screen">
     <div class="death-box">
-      <h1>YOUR GHOST HAS VANISHED.</h1>
+      <h1 data-i18n="death_title">YOUR GHOST HAS VANISHED.</h1>
       <div class="death-stats" id="deathStats"></div>
-      <button class="btn" id="btnReturnHome">Return to the void</button>
+      <button class="btn" id="btnReturnHome" data-i18n="return_void">Return to the void</button>
     </div>
   </div>
 
   <!-- CREATE MODAL -->
   <div class="overlay" id="createOverlay" role="dialog" aria-modal="true" aria-labelledby="createTitle">
     <div class="modal">
-      <h3 id="createTitle">CREATE GHOSTROOM</h3>
+      <h3 id="createTitle" data-i18n="create_ghostroom">CREATE GHOSTROOM</h3>
       <div class="mode-list" id="modeList">
-        <label class="mode-opt selected"><input type="radio" name="mode" value="normal" checked /> <span>NORMAL<span class="desc">Standard temporary room</span></span></label>
-        <label class="mode-opt"><input type="radio" name="mode" value="burn" /> <span>🔥 BURN<span class="desc">Dies when last ghost leaves</span></span></label>
-        <label class="mode-opt"><input type="radio" name="mode" value="solo" /> <span>SOLO<span class="desc">One ghost only</span></span></label>
-        <label class="mode-opt"><input type="radio" name="mode" value="two" /> <span>TWO-GHOST<span class="desc">Max two participants</span></span></label>
-        <label class="mode-opt"><input type="radio" name="mode" value="broadcast" /> <span>BROADCAST<span class="desc">One speaker, many listeners</span></span></label>
+        <label class="mode-opt selected"><input type="radio" name="mode" value="normal" checked /> <span data-i18n-html="mode_normal">NORMAL<span class="desc">Standard temporary room</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="burn" /> <span data-i18n-html="mode_burn">🔥 BURN<span class="desc">Dies when last ghost leaves</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="solo" /> <span data-i18n-html="mode_solo">SOLO<span class="desc">One ghost only</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="two" /> <span data-i18n-html="mode_two">TWO-GHOST<span class="desc">Max two participants</span></span></label>
+        <label class="mode-opt"><input type="radio" name="mode" value="broadcast" /> <span data-i18n-html="mode_broadcast">BROADCAST<span class="desc">One speaker, many listeners</span></span></label>
       </div>
-      <button class="btn" id="btnConfirmCreate">Create</button>
-      <button class="btn secondary" id="btnCancelCreate">Cancel</button>
+      <button class="btn" id="btnConfirmCreate" data-i18n="create">Create</button>
+      <button class="btn secondary" id="btnCancelCreate" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 
   <!-- JOIN CODE MODAL -->
   <div class="overlay" id="joinOverlay" role="dialog" aria-modal="true">
     <div class="modal">
-      <h3>ENTER A ROOM</h3>
-      <input type="text" id="joinCodeInput" placeholder="GHOST-XXXX/secret or full invite" maxlength="64" autocomplete="off" spellcheck="false" style="font-family:inherit;font-size:0.95rem;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:0.7rem 1rem;width:100%;outline:none;" />
-      <p style="font-size:0.65rem;color:var(--muted);line-height:1.4;margin:0">Sealed rooms need the full invite. Codes alone die when the session ends.</p>
-      <button class="btn" id="btnConfirmJoin">Enter</button>
-      <button class="btn secondary" id="btnCancelJoin">Cancel</button>
+      <h3 data-i18n="enter_room">ENTER A ROOM</h3>
+      <input type="text" id="joinCodeInput" placeholder="GHOST-XXXX/secret or full invite" data-i18n-placeholder="join_placeholder" maxlength="64" autocomplete="off" spellcheck="false" style="font-family:inherit;font-size:0.95rem;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:#fff;padding:0.7rem 1rem;width:100%;outline:none;" />
+      <p style="font-size:0.65rem;color:var(--muted);line-height:1.4;margin:0" data-i18n="sealed_hint">Sealed rooms need the full invite. Codes alone die when the session ends.</p>
+      <button class="btn" id="btnConfirmJoin" data-i18n="enter">Enter</button>
+      <button class="btn secondary" id="btnCancelJoin" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 
   <!-- BCH ROOMS MODAL (mobile-safe: scroll body + sticky actions) -->
   <div class="overlay" id="bchOverlay" role="dialog" aria-modal="true" aria-labelledby="bchTitle">
     <div class="modal">
-      <h3 id="bchTitle">₿ BCH ROOMS</h3>
+      <h3 id="bchTitle" data-i18n="bch_rooms">₿ BCH ROOMS</h3>
       <div class="modal-scroll">
-        <p style="font-size:0.7rem;color:var(--muted);line-height:1.5;margin:0">Meet. Build. Coordinate. Exchange. Disappear.</p>
+        <p style="font-size:0.7rem;color:var(--muted);line-height:1.5;margin:0" data-i18n="bch_tagline">Meet. Build. Coordinate. Exchange. Disappear.</p>
         <div class="mode-list bch-type-list" id="bchTypeList">
-          <label class="mode-opt selected"><input type="radio" name="bchType" value="hangout" checked /> <span>💬 BCH Hangout<span class="desc">Open temporary hangout</span></span></label>
-          <label class="mode-opt"><input type="radio" name="bchType" value="dev" /> <span>🛠 Dev Room<span class="desc">Chat · tasks · notes · code</span></span></label>
-          <label class="mode-opt"><input type="radio" name="bchType" value="meetup" /> <span>🤝 Meetup<span class="desc">Title · time · location · QR</span></span></label>
-          <label class="mode-opt"><input type="radio" name="bchType" value="merchant" /> <span>₿ Merchant Room<span class="desc">Tips · payment note · QR</span></span></label>
-          <label class="mode-opt"><input type="radio" name="bchType" value="private" /> <span>🔐 Private Room<span class="desc">Sealed · invite only</span></span></label>
+          <label class="mode-opt selected"><input type="radio" name="bchType" value="hangout" checked /> <span data-i18n-html="bch_hangout">💬 BCH Hangout<span class="desc">Open temporary hangout</span></span></label>
+          <label class="mode-opt"><input type="radio" name="bchType" value="dev" /> <span data-i18n-html="bch_dev">🛠 Dev Room<span class="desc">Chat · tasks · notes · code</span></span></label>
+          <label class="mode-opt"><input type="radio" name="bchType" value="meetup" /> <span data-i18n-html="bch_meetup">🤝 Meetup<span class="desc">Title · time · location · QR</span></span></label>
+          <label class="mode-opt"><input type="radio" name="bchType" value="merchant" /> <span data-i18n-html="bch_merchant">₿ Merchant Room<span class="desc">Tips · payment note · QR</span></span></label>
+          <label class="mode-opt"><input type="radio" name="bchType" value="private" /> <span data-i18n-html="bch_private">🔐 Private Room<span class="desc">Sealed · invite only</span></span></label>
         </div>
         <div class="bch-select-row">
-          <label for="bchRole">Temporary role (optional)</label>
+          <label for="bchRole" data-i18n="temp_role">Temporary role (optional)</label>
           <select id="bchRole" class="bch-field">
-            <option value="">Ghost</option>
-            <option value="Builder">Builder</option>
-            <option value="Developer">Developer</option>
-            <option value="Merchant">Merchant</option>
-            <option value="Researcher">Researcher</option>
-            <option value="User">User</option>
+            <option value="" data-i18n="role_ghost">Ghost</option>
+            <option value="Builder" data-i18n="role_builder">Builder</option>
+            <option value="Developer" data-i18n="role_developer">Developer</option>
+            <option value="Merchant" data-i18n="role_merchant">Merchant</option>
+            <option value="Researcher" data-i18n="role_researcher">Researcher</option>
+            <option value="User" data-i18n="role_user">User</option>
           </select>
         </div>
         <div class="bch-select-row">
-          <label for="bchMsgLife">Message lifetime</label>
+          <label for="bchMsgLife" data-i18n="msg_lifetime">Message lifetime</label>
           <select id="bchMsgLife" class="bch-field">
-            <option value="30">30 seconds</option>
-            <option value="300" selected>5 minutes</option>
-            <option value="1800">30 minutes</option>
-            <option value="7200">2 hours</option>
-            <option value="86400">24 hours</option>
+            <option value="30" data-i18n="dur_30s">30 seconds</option>
+            <option value="300" selected data-i18n="dur_5m">5 minutes</option>
+            <option value="1800" data-i18n="dur_30m">30 minutes</option>
+            <option value="7200" data-i18n="dur_2h">2 hours</option>
+            <option value="86400" data-i18n="dur_24h">24 hours</option>
           </select>
         </div>
         <div class="bch-select-row">
-          <label for="bchRoomLife">Room lifetime</label>
+          <label for="bchRoomLife" data-i18n="room_lifetime">Room lifetime</label>
           <select id="bchRoomLife" class="bch-field">
-            <option value="0">Until last ghost leaves</option>
-            <option value="1800">30 minutes</option>
-            <option value="3600" selected>1 hour</option>
-            <option value="7200">2 hours</option>
-            <option value="86400">24 hours</option>
+            <option value="0" data-i18n="dur_until_last">Until last ghost leaves</option>
+            <option value="1800" data-i18n="dur_30m">30 minutes</option>
+            <option value="3600" selected data-i18n="dur_1h">1 hour</option>
+            <option value="7200" data-i18n="dur_2h">2 hours</option>
+            <option value="86400" data-i18n="dur_24h">24 hours</option>
           </select>
         </div>
         <div class="bch-select-row" id="bchMeetupFields" style="display:none;gap:0.5rem">
-          <label>Meetup title</label>
-          <input type="text" id="bchMeetupTitle" class="bch-field" placeholder="e.g. BCH builders meetup" maxlength="80" />
-          <label>When / where (optional)</label>
-          <input type="text" id="bchMeetupWhere" class="bch-field" placeholder="time · place" maxlength="120" />
+          <label data-i18n="meetup_title">Meetup title</label>
+          <input type="text" id="bchMeetupTitle" class="bch-field" placeholder="e.g. BCH builders meetup" data-i18n-placeholder="meetup_title_ph" maxlength="80" />
+          <label data-i18n="meetup_where">When / where (optional)</label>
+          <input type="text" id="bchMeetupWhere" class="bch-field" placeholder="time · place" data-i18n-placeholder="meetup_where_ph" maxlength="120" />
         </div>
         <div class="bch-select-row">
-          <label for="bchTipAddr">Tip address (optional CashAddr)</label>
+          <label for="bchTipAddr" data-i18n="tip_addr">Tip address (optional CashAddr)</label>
           <input type="text" id="bchTipAddr" class="bch-field" placeholder="bitcoincash:q…" maxlength="80" spellcheck="false" />
         </div>
       </div>
       <div class="modal-actions">
-        <button class="btn" id="btnConfirmBch" style="border-color:var(--bch);background:var(--bch)">Create BCH Room</button>
-        <button class="btn secondary" id="btnCancelBch">Cancel</button>
+        <button class="btn" id="btnConfirmBch" style="border-color:var(--bch);background:var(--bch)" data-i18n="create_bch_room">Create BCH Room</button>
+        <button class="btn secondary" id="btnCancelBch" data-i18n="cancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -1660,6 +1660,193 @@
       }
     };
 
+
+    // Full-UI keys (merged into every language; missing keys fall back to en)
+    const I18N_EXTRA = {'your_ghost': 'Your ghost', 'room': 'Room', 'temperature': 'Temperature', 'presence': 'Presence', 'last_ghost': 'YOU ARE THE LAST GHOST.<br>When you leave, the room fades.', 'bch_room_panel': '₿ BCH Room', 'bch_meta': 'QR · Ghost Transfer · Invite', 'copy_bch_btn': 'Copy BCH', 'regen_qr': 'Regen QR', 'burn': 'Burn', 'typing': '◉ A ghost is writing…', 'mode_normal': 'NORMAL<span class="desc">Standard temporary room</span>', 'mode_burn': '🔥 BURN<span class="desc">Dies when last ghost leaves</span>', 'mode_solo': 'SOLO<span class="desc">One ghost only</span>', 'mode_two': 'TWO-GHOST<span class="desc">Max two participants</span>', 'mode_broadcast': 'BROADCAST<span class="desc">One speaker, many listeners</span>', 'join_placeholder': 'GHOST-XXXX/secret or full invite', 'sealed_hint': 'Sealed rooms need the full invite. Codes alone die when the session ends.', 'enter': 'Enter', 'bch_tagline': 'Meet. Build. Coordinate. Exchange. Disappear.', 'bch_hangout': '💬 BCH Hangout<span class="desc">Open temporary hangout</span>', 'bch_dev': '🛠 Dev Room<span class="desc">Chat · tasks · notes · code</span>', 'bch_meetup': '🤝 Meetup<span class="desc">Title · time · location · QR</span>', 'bch_merchant': '₿ Merchant Room<span class="desc">Tips · payment note · QR</span>', 'bch_private': '🔐 Private Room<span class="desc">Sealed · invite only</span>', 'temp_role': 'Temporary role (optional)', 'role_ghost': 'Ghost', 'role_builder': 'Builder', 'role_developer': 'Developer', 'role_merchant': 'Merchant', 'role_researcher': 'Researcher', 'role_user': 'User', 'msg_lifetime': 'Message lifetime', 'room_lifetime': 'Room lifetime', 'dur_30s': '30 seconds', 'dur_5m': '5 minutes', 'dur_30m': '30 minutes', 'dur_1h': '1 hour', 'dur_2h': '2 hours', 'dur_24h': '24 hours', 'dur_until_last': 'Until last ghost leaves', 'meetup_title': 'Meetup title', 'meetup_title_ph': 'e.g. BCH builders meetup', 'meetup_where': 'When / where (optional)', 'meetup_where_ph': 'time · place', 'tip_addr': 'Tip address (optional CashAddr)', 'create_bch_room': 'Create BCH Room', 'ghost_one': '1 ghost', 'ghost_n': '{n} ghosts', 'temp_cold': 'COLD', 'temp_warm': 'WARM', 'temp_active': 'ACTIVE', 'temp_hot': 'HOT', 'temp_chaotic': 'CHAOTIC', 'session_label': 'SESSION', 'messages_label': 'MESSAGES', 'temp_id_expired': 'TEMPORARY IDENTITY EXPIRED.', 'session_ended': 'Your Ghostroom session has ended.', 'expire_after': 'Messages fade after {life}.<br>Session ends when you leave.', 'mode_normal_short': 'NORMAL', 'mode_burn_short': 'BURN', 'mode_solo_short': 'SOLO', 'mode_two_short': 'TWO-GHOST', 'mode_broadcast_short': 'BROADCAST'};
+    const I18N_EXTRA_LANG = {'pt': {'your_ghost': 'O seu fantasma', 'room': 'Sala', 'temperature': 'Temperatura', 'presence': 'Presença', 'last_ghost': 'VOCÊ É O ÚLTIMO FANTASMA.<br>Quando sair, a sala desaparece.', 'bch_room_panel': '₿ Sala BCH', 'bch_meta': 'QR · Transferência · Convite', 'copy_bch_btn': 'Copiar BCH', 'regen_qr': 'Novo QR', 'burn': 'Queimar', 'typing': '◉ Um fantasma está a escrever…', 'mode_normal': 'NORMAL<span class="desc">Sala temporária padrão</span>', 'mode_burn': '🔥 QUEIMAR<span class="desc">Morre quando o último fantasma sai</span>', 'mode_solo': 'SOLO<span class="desc">Apenas um fantasma</span>', 'mode_two': 'DOIS FANTASMAS<span class="desc">Máximo dois participantes</span>', 'mode_broadcast': 'TRANSMISSÃO<span class="desc">Um orador, vários ouvintes</span>', 'join_placeholder': 'GHOST-XXXX/segredo ou convite completo', 'sealed_hint': 'Salas seladas precisam do convite completo. Só o código morre com a sessão.', 'enter': 'Entrar', 'bch_tagline': 'Encontrar. Construir. Coordenar. Trocar. Desaparecer.', 'bch_hangout': '💬 Hangout BCH<span class="desc">Hangout temporário aberto</span>', 'bch_dev': '🛠 Sala Dev<span class="desc">Chat · tarefas · notas · código</span>', 'bch_meetup': '🤝 Encontro<span class="desc">Título · hora · local · QR</span>', 'bch_merchant': '₿ Sala Comerciante<span class="desc">Gorjetas · nota · QR</span>', 'bch_private': '🔐 Sala Privada<span class="desc">Selada · só por convite</span>', 'temp_role': 'Função temporária (opcional)', 'role_ghost': 'Fantasma', 'role_builder': 'Construtor', 'role_developer': 'Programador', 'role_merchant': 'Comerciante', 'role_researcher': 'Investigador', 'role_user': 'Utilizador', 'msg_lifetime': 'Duração das mensagens', 'room_lifetime': 'Duração da sala', 'dur_30s': '30 segundos', 'dur_5m': '5 minutos', 'dur_30m': '30 minutos', 'dur_1h': '1 hora', 'dur_2h': '2 horas', 'dur_24h': '24 horas', 'dur_until_last': 'Até o último fantasma sair', 'meetup_title': 'Título do encontro', 'meetup_title_ph': 'ex. encontro de builders BCH', 'meetup_where': 'Quando / onde (opcional)', 'meetup_where_ph': 'hora · local', 'tip_addr': 'Endereço de gorjeta (CashAddr opcional)', 'create_bch_room': 'Criar sala BCH', 'ghost_one': '1 fantasma', 'ghost_n': '{n} fantasmas', 'temp_cold': 'FRIO', 'temp_warm': 'MORNO', 'temp_active': 'ATIVO', 'temp_hot': 'QUENTE', 'temp_chaotic': 'CAÓTICO', 'session_label': 'SESSÃO', 'messages_label': 'MENSAGENS', 'temp_id_expired': 'IDENTIDADE TEMPORÁRIA EXPIRADA.', 'session_ended': 'A sua sessão Ghostroom terminou.', 'expire_after': 'Mensagens desaparecem após {life}.<br>A sessão termina quando sai.', 'mode_normal_short': 'NORMAL', 'mode_burn_short': 'QUEIMAR', 'mode_solo_short': 'SOLO', 'mode_two_short': 'DOIS', 'mode_broadcast_short': 'TRANSMISSÃO'}, 'es': {'your_ghost': 'Tu fantasma', 'room': 'Sala', 'temperature': 'Temperatura', 'presence': 'Presencia', 'last_ghost': 'ERES EL ÚLTIMO FANTASMA.<br>Cuando salgas, la sala se desvanece.', 'bch_room_panel': '₿ Sala BCH', 'bch_meta': 'QR · Transferencia · Invitación', 'copy_bch_btn': 'Copiar BCH', 'regen_qr': 'Nuevo QR', 'burn': 'Quemar', 'typing': '◉ Un fantasma está escribiendo…', 'mode_normal': 'NORMAL<span class="desc">Sala temporal estándar</span>', 'mode_burn': '🔥 QUEMAR<span class="desc">Muere cuando sale el último fantasma</span>', 'mode_solo': 'SOLO<span class="desc">Solo un fantasma</span>', 'mode_two': 'DOS FANTASMAS<span class="desc">Máximo dos participantes</span>', 'mode_broadcast': 'DIFUSIÓN<span class="desc">Un orador, muchos oyentes</span>', 'join_placeholder': 'GHOST-XXXX/secreto o invitación completa', 'sealed_hint': 'Las salas selladas necesitan la invitación completa. El código solo muere con la sesión.', 'enter': 'Entrar', 'bch_tagline': 'Encontrar. Construir. Coordinar. Intercambiar. Desaparecer.', 'bch_hangout': '💬 Hangout BCH<span class="desc">Hangout temporal abierto</span>', 'bch_dev': '🛠 Sala Dev<span class="desc">Chat · tareas · notas · código</span>', 'bch_meetup': '🤝 Encuentro<span class="desc">Título · hora · lugar · QR</span>', 'bch_merchant': '₿ Sala Comerciante<span class="desc">Propinas · nota · QR</span>', 'bch_private': '🔐 Sala Privada<span class="desc">Sellada · solo invitación</span>', 'temp_role': 'Rol temporal (opcional)', 'role_ghost': 'Fantasma', 'role_builder': 'Constructor', 'role_developer': 'Desarrollador', 'role_merchant': 'Comerciante', 'role_researcher': 'Investigador', 'role_user': 'Usuario', 'msg_lifetime': 'Duración de mensajes', 'room_lifetime': 'Duración de la sala', 'dur_30s': '30 segundos', 'dur_5m': '5 minutos', 'dur_30m': '30 minutos', 'dur_1h': '1 hora', 'dur_2h': '2 horas', 'dur_24h': '24 horas', 'dur_until_last': 'Hasta que salga el último fantasma', 'meetup_title': 'Título del encuentro', 'meetup_title_ph': 'ej. meetup builders BCH', 'meetup_where': 'Cuándo / dónde (opcional)', 'meetup_where_ph': 'hora · lugar', 'tip_addr': 'Dirección de propina (CashAddr opcional)', 'create_bch_room': 'Crear sala BCH', 'ghost_one': '1 fantasma', 'ghost_n': '{n} fantasmas', 'temp_cold': 'FRÍO', 'temp_warm': 'TIBIO', 'temp_active': 'ACTIVO', 'temp_hot': 'CALIENTE', 'temp_chaotic': 'CAÓTICO', 'session_label': 'SESIÓN', 'messages_label': 'MENSAJES', 'temp_id_expired': 'IDENTIDAD TEMPORAL EXPIRADA.', 'session_ended': 'Tu sesión Ghostroom ha terminado.', 'expire_after': 'Los mensajes desaparecen tras {life}.<br>La sesión termina al salir.', 'mode_normal_short': 'NORMAL', 'mode_burn_short': 'QUEMAR', 'mode_solo_short': 'SOLO', 'mode_two_short': 'DOS', 'mode_broadcast_short': 'DIFUSIÓN'}, 'de': {'your_ghost': 'Dein Geist', 'room': 'Raum', 'temperature': 'Temperatur', 'presence': 'Anwesenheit', 'last_ghost': 'DU BIST DER LETZTE GEIST.<br>Wenn du gehst, verblasst der Raum.', 'bch_room_panel': '₿ BCH-Raum', 'bch_meta': 'QR · Transfer · Einladung', 'copy_bch_btn': 'BCH kopieren', 'regen_qr': 'QR neu', 'burn': 'Verbrennen', 'typing': '◉ Ein Geist schreibt…', 'mode_normal': 'NORMAL<span class="desc">Standard-Temporärraum</span>', 'mode_burn': '🔥 BRENNEN<span class="desc">Stirbt, wenn der letzte Geist geht</span>', 'mode_solo': 'SOLO<span class="desc">Nur ein Geist</span>', 'mode_two': 'ZWEI GEISTER<span class="desc">Max. zwei Teilnehmer</span>', 'mode_broadcast': 'SENDUNG<span class="desc">Ein Sprecher, viele Zuhörer</span>', 'join_placeholder': 'GHOST-XXXX/Geheimnis oder volle Einladung', 'sealed_hint': 'Versiegelte Räume brauchen die volle Einladung. Nur der Code stirbt mit der Sitzung.', 'enter': 'Eintreten', 'bch_tagline': 'Treffen. Bauen. Koordinieren. Tauschen. Verschwinden.', 'bch_hangout': '💬 BCH Hangout<span class="desc">Offener temporärer Hangout</span>', 'bch_dev': '🛠 Dev-Raum<span class="desc">Chat · Aufgaben · Notizen · Code</span>', 'bch_meetup': '🤝 Treffen<span class="desc">Titel · Zeit · Ort · QR</span>', 'bch_merchant': '₿ Händler-Raum<span class="desc">Tips · Notiz · QR</span>', 'bch_private': '🔐 Privater Raum<span class="desc">Versiegelt · nur Einladung</span>', 'temp_role': 'Temporäre Rolle (optional)', 'role_ghost': 'Geist', 'role_builder': 'Builder', 'role_developer': 'Entwickler', 'role_merchant': 'Händler', 'role_researcher': 'Forscher', 'role_user': 'Nutzer', 'msg_lifetime': 'Nachrichten-Lebensdauer', 'room_lifetime': 'Raum-Lebensdauer', 'dur_30s': '30 Sekunden', 'dur_5m': '5 Minuten', 'dur_30m': '30 Minuten', 'dur_1h': '1 Stunde', 'dur_2h': '2 Stunden', 'dur_24h': '24 Stunden', 'dur_until_last': 'Bis der letzte Geist geht', 'meetup_title': 'Treffen-Titel', 'meetup_title_ph': 'z.B. BCH Builder Meetup', 'meetup_where': 'Wann / wo (optional)', 'meetup_where_ph': 'Zeit · Ort', 'tip_addr': 'Tip-Adresse (optional CashAddr)', 'create_bch_room': 'BCH-Raum erstellen', 'ghost_one': '1 Geist', 'ghost_n': '{n} Geister', 'temp_cold': 'KALT', 'temp_warm': 'WARM', 'temp_active': 'AKTIV', 'temp_hot': 'HEISS', 'temp_chaotic': 'CHAOTISCH', 'session_label': 'SITZUNG', 'messages_label': 'NACHRICHTEN', 'temp_id_expired': 'TEMPORÄRE IDENTITÄT ABGELAUFEN.', 'session_ended': 'Deine Ghostroom-Sitzung ist beendet.', 'expire_after': 'Nachrichten verblassen nach {life}.<br>Sitzung endet beim Verlassen.', 'mode_normal_short': 'NORMAL', 'mode_burn_short': 'BRENNEN', 'mode_solo_short': 'SOLO', 'mode_two_short': 'ZWEI', 'mode_broadcast_short': 'SENDUNG'}, 'zh': {'your_ghost': '你的幽灵', 'room': '房间', 'temperature': '温度', 'presence': '在场', 'last_ghost': '你是最后一个幽灵。<br>你离开后，房间将消散。', 'bch_room_panel': '₿ BCH 房间', 'bch_meta': '二维码 · 转移 · 邀请', 'copy_bch_btn': '复制 BCH', 'regen_qr': '刷新二维码', 'burn': '销毁', 'typing': '◉ 有幽灵正在输入…', 'mode_normal': '普通<span class="desc">标准临时房间</span>', 'mode_burn': '🔥 销毁<span class="desc">最后一人离开后消亡</span>', 'mode_solo': '单人<span class="desc">仅一名幽灵</span>', 'mode_two': '双人<span class="desc">最多两人</span>', 'mode_broadcast': '广播<span class="desc">一人发言，多人收听</span>', 'join_placeholder': 'GHOST-XXXX/密钥 或完整邀请', 'sealed_hint': '密封房间需要完整邀请。仅有代码会随会话失效。', 'enter': '进入', 'bch_tagline': '相遇。建造。协调。交换。消失。', 'bch_hangout': '💬 BCH 闲聊<span class="desc">开放临时闲聊</span>', 'bch_dev': '🛠 开发室<span class="desc">聊天 · 任务 · 笔记 · 代码</span>', 'bch_meetup': '🤝 聚会<span class="desc">标题 · 时间 · 地点 · 二维码</span>', 'bch_merchant': '₿ 商户室<span class="desc">打赏 · 备注 · 二维码</span>', 'bch_private': '🔐 私密室<span class="desc">密封 · 仅邀请</span>', 'temp_role': '临时角色（可选）', 'role_ghost': '幽灵', 'role_builder': '建设者', 'role_developer': '开发者', 'role_merchant': '商户', 'role_researcher': '研究者', 'role_user': '用户', 'msg_lifetime': '消息寿命', 'room_lifetime': '房间寿命', 'dur_30s': '30 秒', 'dur_5m': '5 分钟', 'dur_30m': '30 分钟', 'dur_1h': '1 小时', 'dur_2h': '2 小时', 'dur_24h': '24 小时', 'dur_until_last': '直到最后一人离开', 'meetup_title': '聚会标题', 'meetup_title_ph': '例如 BCH 建设者聚会', 'meetup_where': '时间 / 地点（可选）', 'meetup_where_ph': '时间 · 地点', 'tip_addr': '打赏地址（可选 CashAddr）', 'create_bch_room': '创建 BCH 房间', 'ghost_one': '1 个幽灵', 'ghost_n': '{n} 个幽灵', 'temp_cold': '冷', 'temp_warm': '温', 'temp_active': '活跃', 'temp_hot': '热', 'temp_chaotic': '混乱', 'session_label': '会话', 'messages_label': '消息', 'temp_id_expired': '临时身份已过期。', 'session_ended': '你的 Ghostroom 会话已结束。', 'expire_after': '消息在 {life} 后消失。<br>离开即结束会话。', 'mode_normal_short': '普通', 'mode_burn_short': '销毁', 'mode_solo_short': '单人', 'mode_two_short': '双人', 'mode_broadcast_short': '广播'}, 'fil': {'your_ghost': 'Ang iyong ghost', 'room': 'Room', 'temperature': 'Temperatura', 'presence': 'Presensya', 'last_ghost': 'IKAW ANG HULING GHOST.<br>Kapag umalis ka, mawawala ang room.', 'bch_room_panel': '₿ BCH Room', 'bch_meta': 'QR · Transfer · Invite', 'copy_bch_btn': 'Kopyahin ang BCH', 'regen_qr': 'Bagong QR', 'burn': 'Sunugin', 'typing': '◉ May ghost na nagsusulat…', 'mode_normal': 'NORMAL<span class="desc">Karaniwang pansamantalang room</span>', 'mode_burn': '🔥 SUNOG<span class="desc">Namatay kapag umalis ang huling ghost</span>', 'mode_solo': 'SOLO<span class="desc">Isang ghost lang</span>', 'mode_two': 'DALAWANG GHOST<span class="desc">Max na dalawang kalahok</span>', 'mode_broadcast': 'BROADCAST<span class="desc">Isang speaker, maraming listener</span>', 'join_placeholder': 'GHOST-XXXX/secret o buong invite', 'sealed_hint': 'Kailangan ng sealed room ang buong invite. Ang code lang ay namamatay sa session.', 'enter': 'Pumasok', 'bch_tagline': 'Magkita. Magtayo. Mag-coordinate. Magpalitan. Mawala.', 'bch_hangout': '💬 BCH Hangout<span class="desc">Bukas na pansamantalang hangout</span>', 'bch_dev': '🛠 Dev Room<span class="desc">Chat · tasks · notes · code</span>', 'bch_meetup': '🤝 Meetup<span class="desc">Pamagat · oras · lugar · QR</span>', 'bch_merchant': '₿ Merchant Room<span class="desc">Tips · note · QR</span>', 'bch_private': '🔐 Private Room<span class="desc">Sealed · invite only</span>', 'temp_role': 'Pansamantalang role (opsyonal)', 'role_ghost': 'Ghost', 'role_builder': 'Builder', 'role_developer': 'Developer', 'role_merchant': 'Merchant', 'role_researcher': 'Researcher', 'role_user': 'User', 'msg_lifetime': 'Buhay ng mensahe', 'room_lifetime': 'Buhay ng room', 'dur_30s': '30 segundo', 'dur_5m': '5 minuto', 'dur_30m': '30 minuto', 'dur_1h': '1 oras', 'dur_2h': '2 oras', 'dur_24h': '24 oras', 'dur_until_last': 'Hanggang umalis ang huling ghost', 'meetup_title': 'Pamagat ng meetup', 'meetup_title_ph': 'hal. BCH builders meetup', 'meetup_where': 'Kailan / saan (opsyonal)', 'meetup_where_ph': 'oras · lugar', 'tip_addr': 'Tip address (opsyonal CashAddr)', 'create_bch_room': 'Gumawa ng BCH Room', 'ghost_one': '1 ghost', 'ghost_n': '{n} ghosts', 'temp_cold': 'MALAMIG', 'temp_warm': 'MAINIT-INIT', 'temp_active': 'AKTIBO', 'temp_hot': 'MAINIT', 'temp_chaotic': 'MAGULO', 'session_label': 'SESSION', 'messages_label': 'MENSAHE', 'temp_id_expired': 'NAG-EXPIRE ANG PANSAMantalang IDENTITY.', 'session_ended': 'Natapos ang iyong Ghostroom session.', 'expire_after': 'Nawawala ang mensahe pagkatapos ng {life}.<br>Nagtatapos ang session kapag umalis ka.', 'mode_normal_short': 'NORMAL', 'mode_burn_short': 'SUNOG', 'mode_solo_short': 'SOLO', 'mode_two_short': 'DALAWA', 'mode_broadcast_short': 'BROADCAST'}};
+
+    Object.assign(I18N_EXTRA_LANG, {
+      fr: {
+        your_ghost:"Votre fantôme", room:"Salle", temperature:"Température", presence:"Présence",
+        last_ghost:"VOUS ÊTES LE DERNIER FANTÔME.<br>Quand vous partez, la salle s'efface.",
+        bch_room_panel:"₿ Salle BCH", bch_meta:"QR · Transfert · Invitation", copy_bch_btn:"Copier BCH", regen_qr:"Nouveau QR", burn:"Brûler",
+        typing:"◉ Un fantôme écrit…",
+        mode_normal:"NORMAL<span class=\"desc\">Salle temporaire standard</span>",
+        mode_burn:"🔥 BRÛLER<span class=\"desc\">Meurt quand le dernier fantôme part</span>",
+        mode_solo:"SOLO<span class=\"desc\">Un seul fantôme</span>",
+        mode_two:"DEUX FANTÔMES<span class=\"desc\">Deux participants max</span>",
+        mode_broadcast:"DIFFUSION<span class=\"desc\">Un orateur, plusieurs auditeurs</span>",
+        join_placeholder:"GHOST-XXXX/secret ou invitation complète",
+        sealed_hint:"Les salles scellées nécessitent l'invitation complète. Le code seul meurt avec la session.",
+        enter:"Entrer", bch_tagline:"Rencontrer. Construire. Coordonner. Échanger. Disparaître.",
+        bch_hangout:"💬 Hangout BCH<span class=\"desc\">Hangout temporaire ouvert</span>",
+        bch_dev:"🛠 Salle Dev<span class=\"desc\">Chat · tâches · notes · code</span>",
+        bch_meetup:"🤝 Rencontre<span class=\"desc\">Titre · heure · lieu · QR</span>",
+        bch_merchant:"₿ Salle Marchand<span class=\"desc\">Pourboires · note · QR</span>",
+        bch_private:"🔐 Salle Privée<span class=\"desc\">Scellée · invitation seule</span>",
+        temp_role:"Rôle temporaire (optionnel)", role_ghost:"Fantôme", role_builder:"Builder", role_developer:"Développeur", role_merchant:"Marchand", role_researcher:"Chercheur", role_user:"Utilisateur",
+        msg_lifetime:"Durée des messages", room_lifetime:"Durée de la salle",
+        dur_30s:"30 secondes", dur_5m:"5 minutes", dur_30m:"30 minutes", dur_1h:"1 heure", dur_2h:"2 heures", dur_24h:"24 heures", dur_until_last:"Jusqu'au dernier fantôme",
+        meetup_title:"Titre de la rencontre", meetup_title_ph:"ex. meetup builders BCH", meetup_where:"Quand / où (optionnel)", meetup_where_ph:"heure · lieu",
+        tip_addr:"Adresse de pourboire (CashAddr optionnel)", create_bch_room:"Créer une salle BCH",
+        ghost_one:"1 fantôme", ghost_n:"{n} fantômes",
+        temp_cold:"FROID", temp_warm:"TIEDE", temp_active:"ACTIF", temp_hot:"CHAUD", temp_chaotic:"CHAOTIQUE",
+        session_label:"SESSION", messages_label:"MESSAGES", temp_id_expired:"IDENTITÉ TEMPORAIRE EXPIRÉE.", session_ended:"Votre session Ghostroom est terminée.",
+        expire_after:"Les messages disparaissent après {life}.<br>La session se termine à la sortie.",
+        mode_normal_short:"NORMAL", mode_burn_short:"BRÛLER", mode_solo_short:"SOLO", mode_two_short:"DEUX", mode_broadcast_short:"DIFFUSION"
+      },
+      ja: {
+        your_ghost:"あなたのゴースト", room:"ルーム", temperature:"温度", presence:"存在",
+        last_ghost:"あなたが最後のゴーストです。<br>退出すると部屋は消えます。",
+        bch_room_panel:"₿ BCHルーム", bch_meta:"QR · 転送 · 招待", copy_bch_btn:"BCHをコピー", regen_qr:"QR再生成", burn:"焼却",
+        typing:"◉ ゴーストが入力中…",
+        mode_normal:"通常<span class=\"desc\">標準の一時ルーム</span>",
+        mode_burn:"🔥 焼却<span class=\"desc\">最後のゴースト退出で消滅</span>",
+        mode_solo:"ソロ<span class=\"desc\">ゴースト1人のみ</span>",
+        mode_two:"2人<span class=\"desc\">最大2人</span>",
+        mode_broadcast:"放送<span class=\"desc\">1人の発言者、多数の聴取者</span>",
+        join_placeholder:"GHOST-XXXX/秘密 または完全な招待",
+        sealed_hint:"封印ルームには完全な招待が必要。コードだけはセッションと共に無効。",
+        enter:"入室", bch_tagline:"出会う。作る。調整する。交換する。消える。",
+        bch_hangout:"💬 BCHハングアウト<span class=\"desc\">一時的な開放ハングアウト</span>",
+        bch_dev:"🛠 開発ルーム<span class=\"desc\">チャット · タスク · メモ · コード</span>",
+        bch_meetup:"🤝 ミートアップ<span class=\"desc\">タイトル · 時間 · 場所 · QR</span>",
+        bch_merchant:"₿ 店舗ルーム<span class=\"desc\">チップ · メモ · QR</span>",
+        bch_private:"🔐 プライベート<span class=\"desc\">封印 · 招待のみ</span>",
+        temp_role:"一時ロール（任意）", role_ghost:"ゴースト", role_builder:"ビルダー", role_developer:"開発者", role_merchant:"店舗", role_researcher:"研究者", role_user:"ユーザー",
+        msg_lifetime:"メッセージ寿命", room_lifetime:"ルーム寿命",
+        dur_30s:"30秒", dur_5m:"5分", dur_30m:"30分", dur_1h:"1時間", dur_2h:"2時間", dur_24h:"24時間", dur_until_last:"最後のゴースト退出まで",
+        meetup_title:"ミートアップ名", meetup_title_ph:"例: BCHビルダー集会", meetup_where:"いつ / どこ（任意）", meetup_where_ph:"時間 · 場所",
+        tip_addr:"チップアドレス（任意CashAddr）", create_bch_room:"BCHルームを作成",
+        ghost_one:"1ゴースト", ghost_n:"{n}ゴースト",
+        temp_cold:"冷", temp_warm:"暖", temp_active:"活発", temp_hot:"熱", temp_chaotic:"混沌",
+        session_label:"セッション", messages_label:"メッセージ", temp_id_expired:"一時IDは期限切れ。", session_ended:"Ghostroomセッションは終了しました。",
+        expire_after:"メッセージは{life}後に消えます。<br>退出でセッション終了。",
+        mode_normal_short:"通常", mode_burn_short:"焼却", mode_solo_short:"ソロ", mode_two_short:"2人", mode_broadcast_short:"放送"
+      },
+      ru: {
+        your_ghost:"Ваш призрак", room:"Комната", temperature:"Температура", presence:"Присутствие",
+        last_ghost:"ВЫ ПОСЛЕДНИЙ ПРИЗРАК.<br>Когда вы уйдёте, комната исчезнет.",
+        bch_room_panel:"₿ BCH комната", bch_meta:"QR · Перенос · Приглашение", copy_bch_btn:"Копировать BCH", regen_qr:"Новый QR", burn:"Сжечь",
+        typing:"◉ Призрак пишет…",
+        mode_normal:"ОБЫЧНАЯ<span class=\"desc\">Стандартная временная комната</span>",
+        mode_burn:"🔥 СЖЕЧЬ<span class=\"desc\">Умирает, когда уходит последний</span>",
+        mode_solo:"СОЛО<span class=\"desc\">Только один призрак</span>",
+        mode_two:"ДВА ПРИЗРАКА<span class=\"desc\">Максимум двое</span>",
+        mode_broadcast:"ТРАНСЛЯЦИЯ<span class=\"desc\">Один говорящий, много слушателей</span>",
+        join_placeholder:"GHOST-XXXX/секрет или полное приглашение",
+        sealed_hint:"Закрытым комнатам нужно полное приглашение. Один код умирает с сессией.",
+        enter:"Войти", bch_tagline:"Встретиться. Строить. Координировать. Обмениваться. Исчезать.",
+        bch_hangout:"💬 BCH Hangout<span class=\"desc\">Открытый временный hangout</span>",
+        bch_dev:"🛠 Dev-комната<span class=\"desc\">Чат · задачи · заметки · код</span>",
+        bch_meetup:"🤝 Встреча<span class=\"desc\">Название · время · место · QR</span>",
+        bch_merchant:"₿ Комната торговца<span class=\"desc\">Чаевые · заметка · QR</span>",
+        bch_private:"🔐 Приватная<span class=\"desc\">Закрыта · только приглашение</span>",
+        temp_role:"Временная роль (необязательно)", role_ghost:"Призрак", role_builder:"Строитель", role_developer:"Разработчик", role_merchant:"Торговец", role_researcher:"Исследователь", role_user:"Пользователь",
+        msg_lifetime:"Время жизни сообщений", room_lifetime:"Время жизни комнаты",
+        dur_30s:"30 секунд", dur_5m:"5 минут", dur_30m:"30 минут", dur_1h:"1 час", dur_2h:"2 часа", dur_24h:"24 часа", dur_until_last:"Пока не уйдёт последний призрак",
+        meetup_title:"Название встречи", meetup_title_ph:"напр. встреча BCH builders", meetup_where:"Когда / где (необязательно)", meetup_where_ph:"время · место",
+        tip_addr:"Адрес чаевых (опциональный CashAddr)", create_bch_room:"Создать BCH комнату",
+        ghost_one:"1 призрак", ghost_n:"{n} призраков",
+        temp_cold:"ХОЛОДНО", temp_warm:"ТЕПЛО", temp_active:"АКТИВНО", temp_hot:"ЖАРКО", temp_chaotic:"ХАОС",
+        session_label:"СЕССИЯ", messages_label:"СООБЩЕНИЯ", temp_id_expired:"ВРЕМЕННАЯ ЛИЧНОСТЬ ИСТЕКЛА.", session_ended:"Ваша сессия Ghostroom завершена.",
+        expire_after:"Сообщения исчезают через {life}.<br>Сессия заканчивается при выходе.",
+        mode_normal_short:"ОБЫЧНАЯ", mode_burn_short:"СЖЕЧЬ", mode_solo_short:"СОЛО", mode_two_short:"ДВА", mode_broadcast_short:"ТРАНСЛЯЦИЯ"
+      },
+      id: {
+        your_ghost:"Hantu Anda", room:"Ruangan", temperature:"Suhu", presence:"Kehadiran",
+        last_ghost:"ANDA HANTU TERAKHIR.<br>Saat Anda keluar, ruangan menghilang.",
+        bch_room_panel:"₿ Ruang BCH", bch_meta:"QR · Transfer · Undangan", copy_bch_btn:"Salin BCH", regen_qr:"QR baru", burn:"Bakar",
+        typing:"◉ Seekor hantu sedang menulis…",
+        mode_normal:"NORMAL<span class=\"desc\">Ruangan sementara standar</span>",
+        mode_burn:"🔥 BAKAR<span class=\"desc\">Mati saat hantu terakhir keluar</span>",
+        mode_solo:"SOLO<span class=\"desc\">Hanya satu hantu</span>",
+        mode_two:"DUA HANTU<span class=\"desc\">Maksimal dua peserta</span>",
+        mode_broadcast:"SIARAN<span class=\"desc\">Satu pembicara, banyak pendengar</span>",
+        join_placeholder:"GHOST-XXXX/rahasia atau undangan penuh",
+        sealed_hint:"Ruangan tersegel butuh undangan penuh. Kode saja mati bersama sesi.",
+        enter:"Masuk", bch_tagline:"Bertemu. Membangun. Koordinasi. Bertukar. Menghilang.",
+        bch_hangout:"💬 Hangout BCH<span class=\"desc\">Hangout sementara terbuka</span>",
+        bch_dev:"🛠 Ruang Dev<span class=\"desc\">Chat · tugas · catatan · kode</span>",
+        bch_meetup:"🤝 Meetup<span class=\"desc\">Judul · waktu · lokasi · QR</span>",
+        bch_merchant:"₿ Ruang Merchant<span class=\"desc\">Tip · catatan · QR</span>",
+        bch_private:"🔐 Ruang Privat<span class=\"desc\">Tersegel · hanya undangan</span>",
+        temp_role:"Peran sementara (opsional)", role_ghost:"Hantu", role_builder:"Builder", role_developer:"Developer", role_merchant:"Merchant", role_researcher:"Peneliti", role_user:"Pengguna",
+        msg_lifetime:"Umur pesan", room_lifetime:"Umur ruangan",
+        dur_30s:"30 detik", dur_5m:"5 menit", dur_30m:"30 menit", dur_1h:"1 jam", dur_2h:"2 jam", dur_24h:"24 jam", dur_until_last:"Sampai hantu terakhir keluar",
+        meetup_title:"Judul meetup", meetup_title_ph:"mis. meetup builders BCH", meetup_where:"Kapan / di mana (opsional)", meetup_where_ph:"waktu · tempat",
+        tip_addr:"Alamat tip (CashAddr opsional)", create_bch_room:"Buat Ruang BCH",
+        ghost_one:"1 hantu", ghost_n:"{n} hantu",
+        temp_cold:"DINGIN", temp_warm:"HANGAT", temp_active:"AKTIF", temp_hot:"PANAS", temp_chaotic:"KAOTIK",
+        session_label:"SESI", messages_label:"PESAN", temp_id_expired:"IDENTITAS SEMENTARA BERAKHIR.", session_ended:"Sesi Ghostroom Anda telah berakhir.",
+        expire_after:"Pesan menghilang setelah {life}.<br>Sesi berakhir saat keluar.",
+        mode_normal_short:"NORMAL", mode_burn_short:"BAKAR", mode_solo_short:"SOLO", mode_two_short:"DUA", mode_broadcast_short:"SIARAN"
+      },
+      hi: {
+        your_ghost:"आपका भूत", room:"कमरा", temperature:"तापमान", presence:"उपस्थिति",
+        last_ghost:"आप अंतिम भूत हैं।<br>जब आप जाएँगे, कमरा विलीन हो जाएगा।",
+        bch_room_panel:"₿ BCH कमरा", bch_meta:"QR · स्थानांतरण · निमंत्रण", copy_bch_btn:"BCH कॉपी", regen_qr:"नया QR", burn:"जलाएँ",
+        typing:"◉ एक भूत लिख रहा है…",
+        mode_normal:"सामान्य<span class=\"desc\">मानक अस्थायी कमरा</span>",
+        mode_burn:"🔥 जलाएँ<span class=\"desc\">अंतिम भूत जाने पर समाप्त</span>",
+        mode_solo:"अकेला<span class=\"desc\">केवल एक भूत</span>",
+        mode_two:"दो भूत<span class=\"desc\">अधिकतम दो</span>",
+        mode_broadcast:"प्रसारण<span class=\"desc\">एक वक्ता, कई श्रोता</span>",
+        join_placeholder:"GHOST-XXXX/रहस्य या पूरा निमंत्रण",
+        sealed_hint:"सील कमरों को पूरा निमंत्रण चाहिए। केवल कोड सत्र के साथ समाप्त।",
+        enter:"प्रवेश", bch_tagline:"मिलें। बनाएँ। समन्वय। आदान-प्रदान। गायब।",
+        bch_hangout:"💬 BCH हैंगआउट<span class=\"desc\">खुला अस्थायी हैंगआउट</span>",
+        bch_dev:"🛠 डेव कमरा<span class=\"desc\">चैट · कार्य · नोट्स · कोड</span>",
+        bch_meetup:"🤝 मुलाकात<span class=\"desc\">शीर्षक · समय · स्थान · QR</span>",
+        bch_merchant:"₿ व्यापारी कमरा<span class=\"desc\">टिप · नोट · QR</span>",
+        bch_private:"🔐 निजी कमरा<span class=\"desc\">सील · केवल निमंत्रण</span>",
+        temp_role:"अस्थायी भूमिका (वैकल्पिक)", role_ghost:"भूत", role_builder:"बिल्डर", role_developer:"डेवलपर", role_merchant:"व्यापारी", role_researcher:"शोधकर्ता", role_user:"उपयोगकर्ता",
+        msg_lifetime:"संदेश अवधि", room_lifetime:"कमरा अवधि",
+        dur_30s:"30 सेकंड", dur_5m:"5 मिनट", dur_30m:"30 मिनट", dur_1h:"1 घंटा", dur_2h:"2 घंटे", dur_24h:"24 घंटे", dur_until_last:"अंतिम भूत जाने तक",
+        meetup_title:"मुलाकात शीर्षक", meetup_title_ph:"उदा. BCH बिल्डर मुलाकात", meetup_where:"कब / कहाँ (वैकल्पिक)", meetup_where_ph:"समय · स्थान",
+        tip_addr:"टिप पता (वैकल्पिक CashAddr)", create_bch_room:"BCH कमरा बनाएँ",
+        ghost_one:"1 भूत", ghost_n:"{n} भूत",
+        temp_cold:"ठंडा", temp_warm:"गुनगुना", temp_active:"सक्रिय", temp_hot:"गर्म", temp_chaotic:"अराजक",
+        session_label:"सत्र", messages_label:"संदेश", temp_id_expired:"अस्थायी पहचान समाप्त।", session_ended:"आपका Ghostroom सत्र समाप्त हो गया।",
+        expire_after:"संदेश {life} बाद गायब।<br>छोड़ने पर सत्र समाप्त।",
+        mode_normal_short:"सामान्य", mode_burn_short:"जलाएँ", mode_solo_short:"अकेला", mode_two_short:"दो", mode_broadcast_short:"प्रसारण"
+      },
+      ar: {
+        your_ghost:"شبحك", room:"غرفة", temperature:"الحرارة", presence:"الحضور",
+        last_ghost:"أنت الشبح الأخير.<br>عندما تغادر، تختفي الغرفة.",
+        bch_room_panel:"₿ غرفة BCH", bch_meta:"QR · نقل · دعوة", copy_bch_btn:"نسخ BCH", regen_qr:"QR جديد", burn:"حرق",
+        typing:"◉ شبح يكتب…",
+        mode_normal:"عادي<span class=\"desc\">غرفة مؤقتة قياسية</span>",
+        mode_burn:"🔥 حرق<span class=\"desc\">تموت عند مغادرة آخر شبح</span>",
+        mode_solo:"فردي<span class=\"desc\">شبح واحد فقط</span>",
+        mode_two:"شبحان<span class=\"desc\">حد أقصى مشاركان</span>",
+        mode_broadcast:"بث<span class=\"desc\">متحدث واحد، مستمعون كثر</span>",
+        join_placeholder:"GHOST-XXXX/سر أو دعوة كاملة",
+        sealed_hint:"الغرف المغلقة تحتاج الدعوة الكاملة. الرمز وحده يموت مع الجلسة.",
+        enter:"دخول", bch_tagline:"التقِ. ابنِ. نسّق. تبادل. اختفِ.",
+        bch_hangout:"💬 تجمع BCH<span class=\"desc\">تجمع مؤقت مفتوح</span>",
+        bch_dev:"🛠 غرفة تطوير<span class=\"desc\">دردشة · مهام · ملاحظات · كود</span>",
+        bch_meetup:"🤝 لقاء<span class=\"desc\">عنوان · وقت · مكان · QR</span>",
+        bch_merchant:"₿ غرفة تاجر<span class=\"desc\">إكراميات · ملاحظة · QR</span>",
+        bch_private:"🔐 غرفة خاصة<span class=\"desc\">مغلقة · دعوة فقط</span>",
+        temp_role:"دور مؤقت (اختياري)", role_ghost:"شبح", role_builder:"بانٍ", role_developer:"مطوّر", role_merchant:"تاجر", role_researcher:"باحث", role_user:"مستخدم",
+        msg_lifetime:"عمر الرسائل", room_lifetime:"عمر الغرفة",
+        dur_30s:"30 ثانية", dur_5m:"5 دقائق", dur_30m:"30 دقيقة", dur_1h:"ساعة", dur_2h:"ساعتان", dur_24h:"24 ساعة", dur_until_last:"حتى يغادر آخر شبح",
+        meetup_title:"عنوان اللقاء", meetup_title_ph:"مثال لقاء مطوري BCH", meetup_where:"متى / أين (اختياري)", meetup_where_ph:"وقت · مكان",
+        tip_addr:"عنوان الإكرامية (CashAddr اختياري)", create_bch_room:"إنشاء غرفة BCH",
+        ghost_one:"شبح واحد", ghost_n:"{n} أشباح",
+        temp_cold:"بارد", temp_warm:"دافئ", temp_active:"نشط", temp_hot:"حار", temp_chaotic:"فوضوي",
+        session_label:"جلسة", messages_label:"رسائل", temp_id_expired:"انتهت الهوية المؤقتة.", session_ended:"انتهت جلسة Ghostroom.",
+        expire_after:"تختفي الرسائل بعد {life}.<br>تنتهي الجلسة عند المغادرة.",
+        mode_normal_short:"عادي", mode_burn_short:"حرق", mode_solo_short:"فردي", mode_two_short:"شبحان", mode_broadcast_short:"بث"
+      }
+    });
+    Object.keys(I18N).forEach(lang => {
+      Object.assign(I18N[lang], I18N_EXTRA);
+      if (I18N_EXTRA_LANG[lang]) Object.assign(I18N[lang], I18N_EXTRA_LANG[lang]);
+    });
+
+
     let currentLang = "en";
     try {
       const saved = localStorage.getItem("ghostroom_lang");
@@ -1984,7 +2171,7 @@
     function updatePresenceUI() {
       const active = getActiveGhosts();
       const n = active.length;
-      $("ghostCountLabel").textContent = n === 1 ? "1 ghost" : n + " ghosts";
+      $("ghostCountLabel").textContent = n === 1 ? t("ghost_one") : t("ghost_n", { n });
       const dots = $("presenceDots");
       dots.innerHTML = "";
       for (let i = 0; i < Math.min(n, 12); i++) {
@@ -1994,12 +2181,12 @@
       }
       // Temperature
       const recentMsgs = messageStore.filter(e => Math.floor(Date.now()/1000) - e.created_at < 90).length;
-      let temp = "COLD", pct = 12, cls = "cold";
-      if (n >= 5 || recentMsgs >= 8) { temp = "CHAOTIC"; pct = 100; cls = "chaotic"; }
-      else if (n >= 3 || recentMsgs >= 4) { temp = "HOT"; pct = 80; cls = "hot"; }
-      else if (n >= 2 || recentMsgs >= 2) { temp = "ACTIVE"; pct = 55; cls = "warm"; }
-      else if (recentMsgs >= 1) { temp = "WARM"; pct = 35; cls = "warm"; }
-      $("tempLabel").textContent = temp;
+      let tempKey = "temp_cold", pct = 12, cls = "cold";
+      if (n >= 5 || recentMsgs >= 8) { tempKey = "temp_chaotic"; pct = 100; cls = "chaotic"; }
+      else if (n >= 3 || recentMsgs >= 4) { tempKey = "temp_hot"; pct = 80; cls = "hot"; }
+      else if (n >= 2 || recentMsgs >= 2) { tempKey = "temp_active"; pct = 55; cls = "warm"; }
+      else if (recentMsgs >= 1) { tempKey = "temp_warm"; pct = 35; cls = "warm"; }
+      $("tempLabel").textContent = t(tempKey);
       const fill = $("tempFill");
       fill.style.width = pct + "%";
       fill.className = "temp-fill " + cls;
@@ -2052,7 +2239,12 @@
       touchPresence(pk);
 
       $("roomCodeDisplay").textContent = code;
-      const modeLabel = bch ? (BCH_TYPE_LABELS[bch.type] || "₿ BCH") : mode.toUpperCase();
+      let modeLabel;
+      if (bch) modeLabel = BCH_TYPE_LABELS[bch.type] || "₿ BCH";
+      else {
+        const mk = ({ normal: "mode_normal_short", burn: "mode_burn_short", solo: "mode_solo_short", two: "mode_two_short", broadcast: "mode_broadcast_short" })[mode];
+        modeLabel = mk ? t(mk) : mode.toUpperCase();
+      }
       $("modeTag").textContent = modeLabel;
       $("modeTag").classList.toggle("bch", !!bch);
       $("ghostBadge").innerHTML = escapeHtml(ghostName) + '<div class="id">' + escapeHtml(ghostId) + "</div>";
@@ -2063,7 +2255,7 @@
       if (expNote) {
         const mins = Math.round(EXPIRE_SEC / 60);
         const lifeStr = EXPIRE_SEC < 60 ? EXPIRE_SEC + "s" : (mins >= 60 ? (mins / 60) + "h" : mins + " min");
-        expNote.innerHTML = "Messages fade after " + lifeStr + ".<br>Session ends when you leave.";
+        expNote.innerHTML = t("expire_after", { life: lifeStr });
       }
 
       // Safely reset messages without destroying the empty-state node
@@ -2202,11 +2394,12 @@
         const m = Math.floor(stats.duration / 60);
         const s = stats.duration % 60;
         $("deathStats").innerHTML =
-          "SESSION: " + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0") + "<br>" +
-          "MESSAGES: " + stats.messages + "<br><br>" +
-          "TEMPORARY IDENTITY EXPIRED.<br>" +
-          "Your Ghostroom session has ended.";
+          t("session_label") + ": " + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0") + "<br>" +
+          t("messages_label") + ": " + stats.messages + "<br><br>" +
+          t("temp_id_expired") + "<br>" +
+          t("session_ended");
         showScreen("death");
+        applyLanguage(currentLang);
       }
     }
 
