@@ -1040,6 +1040,7 @@
         <button class="btn secondary" id="btnEnterCode">ENTER A ROOM</button>
       </div>
       <div class="home-stats" id="homeStats">NETWORK · connecting…</div>
+      <div class="connect-banner" id="homeConnectBanner" role="status" aria-live="polite" style="margin:0.5rem auto;max-width:340px;border-radius:10px;border:1px solid var(--border)"></div>
       <p class="home-privacy">
         No account. No permanent identity. Disposable key.<br>
         Client-side encryption. Nostr relay transport.<br>
@@ -1332,8 +1333,14 @@
     let debugMode = false;
     let bchRoomTimer = null; // room lifetime interval
     let myBchRole = "";      // temporary role for this session
+    // Connection lifecycle: HOME | ROOM_ACTIVE | CONNECTION_PENDING | CONNECTED
+    // (UI uses connectionState for request flow; ghostLifecycle tracks where the ghost is)
+    let ghostLifecycle = "HOME"; // HOME | ROOM_ACTIVE
     let connectionState = "open"; // open | pending | connected
     let pendingRequests = new Map(); // pubkey → { name, id, ts }
+    let awaitingConnectFrom = null; // pubkey we requested
+    let presenceTimer = null;
+    let connectSub = null;
     let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // ── DOM ──────────────────────────────────────────────────
@@ -1349,6 +1356,15 @@
     function showScreen(name) {
       Object.values(screens).forEach(s => s.classList.remove("active"));
       screens[name].classList.add("active");
+      if (name === "home") {
+        ghostLifecycle = "HOME";
+        startHomePresence();
+      } else if (name === "room") {
+        ghostLifecycle = "ROOM_ACTIVE";
+        stopHomePresence();
+      } else {
+        stopHomePresence();
+      }
     }
 
     function randomCode() {
@@ -1723,8 +1739,9 @@
       roomKey = null;
       myBchRole = "";
       connectionState = "open";
+      awaitingConnectFrom = null;
       pendingRequests.clear();
-      hideConnectBanner();
+      hideAllConnectBanners();
       EXPIRE_SEC = EXPIRE_SEC_DEFAULT;
       messageStore = [];
       messageEls.clear();
@@ -1771,6 +1788,11 @@
     }
 
     async function handleEvent(ev) {
+      // Ignore presence heartbeats in chat
+      if (ev.content === "GHOST_PRESENCE_HOME" || ev.tags.some(t => t[0] === "presence")) {
+        return;
+      }
+
       // Typing
       if (ev.content === "…" || (ev.tags.some(t => t[0] === "typing"))) {
         if (ev.pubkey === pk || myTypingIds.has(ev.id)) return;
@@ -1814,8 +1836,49 @@
       renderAll();
     }
 
+    // ── Presence (HOME only) + global connection channel ─────
+    function startHomePresence() {
+      stopHomePresence();
+      const pulse = async () => {
+        if (!pool || !sk || ghostLifecycle !== "HOME") return;
+        try {
+          const event = finalizeEvent({
+            kind: KIND_MSG,
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [
+              ["t", "ghostroom"],
+              ["presence", "home"],
+              ["gp", "0.2"]
+            ],
+            content: "GHOST_PRESENCE_HOME"
+          }, sk);
+          await Promise.any(pool.publish(RELAYS, event));
+        } catch (_) {}
+      };
+      pulse();
+      presenceTimer = setInterval(pulse, 25000);
+    }
+
+    function stopHomePresence() {
+      if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
+    }
+
+    function ensureConnectSub() {
+      if (!pool || connectSub) return;
+      // Listen for connection protocol aimed at anyone (filter in handler)
+      connectSub = pool.subscribeMany(RELAYS, [{
+        kinds: [KIND_MSG],
+        "#t": ["ghostroom"],
+        "#connect": ["req", "accept", "deny"],
+        since: Math.floor(Date.now() / 1000) - 120,
+        limit: 40
+      }], {
+        onevent(ev) { handleConnectEvent(ev); }
+      });
+    }
+
     async function handleConnectEvent(ev) {
-      if (!currentRoom || ev.pubkey === pk) return;
+      if (!ev || ev.pubkey === pk) return;
       const tags = ev.tags || [];
       const connectTag = tags.find(t => t[0] === "connect");
       const action = connectTag ? connectTag[1] : null;
@@ -1823,56 +1886,79 @@
       const targetPk = pTag ? pTag[1] : null;
       const content = ev.content || "";
 
-      // Incoming request (we are already in the room)
-      if (action === "req" || content === "GHOST_CONNECT_REQ") {
-        if (connectionState === "pending") return; // seekers don't handle other reqs
+      // Incoming request aimed at us (or open req while we're discoverable)
+      if (action === "req" || content.startsWith("GHOST_CONNECT_REQ")) {
+        if (targetPk && targetPk !== pk) return;
+        if (connectionState === "pending" && awaitingConnectFrom) return;
         const name = coolName(ev.pubkey);
         pendingRequests.set(ev.pubkey, { name, id: ev.id, ts: ev.created_at });
-        showConnectRequestBanner(ev.pubkey, name);
-        touchPresence(ev.pubkey);
-        updatePresenceUI();
+        showConnectRequestUI(ev.pubkey, name);
         return;
       }
 
-      // Accept aimed at us
+      // Accept aimed at us — never destroys recipient session; we are the requester
       if ((action === "accept" || content.startsWith("GHOST_CONNECT_ACCEPT")) && targetPk === pk) {
-        let secret = currentRoom.secret || "";
-        if (content.startsWith("GHOST_CONNECT_ACCEPT|")) {
-          secret = content.slice("GHOST_CONNECT_ACCEPT|".length) || secret;
+        // Format: GHOST_CONNECT_ACCEPT|CODE|SECRET   or ACCEPT_BUSY
+        if (content.includes("ACCEPT_BUSY") || action === "accept_busy") {
+          connectionState = "open";
+          awaitingConnectFrom = null;
+          hideAllConnectBanners();
+          $("homeStats").textContent = "Ghost accepted but is in a room. They were not moved.";
+          setTimeout(() => {
+            if (ghostLifecycle === "HOME")
+              $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths";
+          }, 5000);
+          return;
         }
-        if (secret) {
-          currentRoom.secret = secret;
-          try {
-            roomKey = await deriveRoomKey(currentRoom.code, secret);
-          } catch (_) {}
+        let code = "";
+        let secret = "";
+        if (content.startsWith("GHOST_CONNECT_ACCEPT|")) {
+          const parts = content.split("|");
+          code = (parts[1] || "").toUpperCase();
+          secret = parts[2] || "";
         }
         connectionState = "connected";
-        pendingRequests.clear();
-        hideConnectBanner();
-        $("msgInput").disabled = false;
-        $("btnSend").disabled = false;
-        addSystem("Connection accepted. You are in.");
-        // Re-subscribe isn't needed; re-render will decrypt future msgs. Pull isn't available — user sees new msgs.
+        awaitingConnectFrom = null;
+        hideAllConnectBanners();
+        if (code && code.startsWith("GHOST-")) {
+          // Only enter if we are on HOME (never kidnap ourselves out if somehow mid-flow)
+          if (ghostLifecycle === "HOME" || !currentRoom) {
+            await enterRoom(code, "normal", secret, false);
+            addSystem("Connection established. A new sealed room opened.");
+          } else {
+            $("homeStats").textContent = "Invite ready — leave your room to join when you choose.";
+          }
+        }
         return;
       }
 
       // Deny aimed at us
       if ((action === "deny" || content === "GHOST_CONNECT_DENY") && targetPk === pk) {
         connectionState = "open";
-        hideConnectBanner();
-        addSystem("Connection denied. Returning to the void…");
-        setTimeout(() => leaveRoom(true), 1200);
+        awaitingConnectFrom = null;
+        hideAllConnectBanners();
+        if (ghostLifecycle === "HOME") {
+          $("homeStats").textContent = "Connection denied.";
+          setTimeout(() => {
+            $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths";
+          }, 3500);
+        } else {
+          addSystem("Connection denied.");
+        }
         return;
       }
     }
 
-    function showConnectRequestBanner(fromPk, name) {
-      const banner = $("connectBanner");
+    function showConnectRequestUI(fromPk, name) {
+      const inRoom = ghostLifecycle === "ROOM_ACTIVE" && currentRoom;
+      const banner = inRoom ? $("connectBanner") : $("homeConnectBanner");
       if (!banner) return;
       banner.className = "connect-banner visible";
       banner.innerHTML = "";
       const text = document.createElement("div");
-      text.textContent = "👻 " + name + " wants to connect.";
+      text.textContent = inRoom
+        ? "👻 " + name + " wants to connect. Accept will not remove you from this room."
+        : "👻 " + name + " wants to connect.";
       const actions = document.createElement("div");
       actions.className = "connect-actions";
       const acc = document.createElement("button");
@@ -1890,6 +1976,26 @@
       banner.appendChild(actions);
     }
 
+    function showPendingHomeStatus(msg) {
+      $("homeStats").textContent = msg || "Connection requested. Waiting…";
+      const banner = $("homeConnectBanner");
+      if (banner) {
+        banner.className = "connect-banner visible pending";
+        banner.textContent = "CONNECTION PENDING — waiting for accept/deny. You stay here until they respond.";
+      }
+    }
+
+    function hideAllConnectBanners() {
+      ["connectBanner", "homeConnectBanner"].forEach(id => {
+        const b = $(id);
+        if (!b) return;
+        b.className = "connect-banner";
+        b.innerHTML = "";
+      });
+    }
+
+    function hideConnectBanner() { hideAllConnectBanners(); }
+
     function showPendingBanner() {
       const banner = $("connectBanner");
       if (!banner) return;
@@ -1897,60 +2003,112 @@
       banner.textContent = "Connection requested. Waiting for a ghost to accept…";
     }
 
-    function hideConnectBanner() {
-      const banner = $("connectBanner");
-      if (!banner) return;
-      banner.className = "connect-banner";
-      banner.innerHTML = "";
+    function makeSecret() {
+      try {
+        return Array.from(crypto.getRandomValues(new Uint8Array(5)))
+          .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+      } catch (_) {
+        return Math.random().toString(36).slice(2, 10);
+      }
     }
 
     async function respondConnect(fromPk, accept) {
-      if (!currentRoom || !sk || !pool) return;
+      if (!sk || !pool) return;
       pendingRequests.delete(fromPk);
-      const content = accept
-        ? ("GHOST_CONNECT_ACCEPT|" + (currentRoom.secret || ""))
-        : "GHOST_CONNECT_DENY";
+
+      if (!accept) {
+        const event = finalizeEvent({
+          kind: KIND_MSG,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            ["t", "ghostroom"],
+            ["connect", "deny"],
+            ["p", fromPk]
+          ],
+          content: "GHOST_CONNECT_DENY"
+        }, sk);
+        try { await Promise.any(pool.publish(RELAYS, event)); } catch (_) {}
+        if (pendingRequests.size === 0) hideAllConnectBanners();
+        else {
+          const [nextPk, info] = pendingRequests.entries().next().value;
+          showConnectRequestUI(nextPk, info.name);
+        }
+        if (currentRoom) addSystem("You denied a ghost.");
+        else $("homeStats").textContent = "Request denied.";
+        return;
+      }
+
+      // ACCEPT — never force-leave current room
+      if (ghostLifecycle === "ROOM_ACTIVE" && currentRoom) {
+        // Stay in Room X. Tell requester we accepted but are busy.
+        // Also offer a fresh sealed room they can wait in — we are not moved.
+        const code = randomCode();
+        const secret = makeSecret();
+        const event = finalizeEvent({
+          kind: KIND_MSG,
+          created_at: Math.floor(Date.now() / 1000),
+          tags: [
+            ["t", "ghostroom"],
+            ["connect", "accept"],
+            ["p", fromPk],
+            ["r", code]
+          ],
+          content: "GHOST_CONNECT_ACCEPT|" + code + "|" + secret
+        }, sk);
+        try { await Promise.any(pool.publish(RELAYS, event)); } catch (_) {}
+        hideAllConnectBanners();
+        addSystem("Accepted. You stay in this room. They received a sealed invite — join later if you want.");
+        // Optional: stash invite for the recipient to copy later
+        try {
+          const link = location.origin + location.pathname + "#r/" + code + "/" + secret;
+          await copyText(link);
+          addSystem("Invite for them also copied to your clipboard.");
+        } catch (_) {}
+        return;
+      }
+
+      // HOME — create a new sealed room and invite requester; both can meet
+      const code = randomCode();
+      const secret = makeSecret();
       const event = finalizeEvent({
         kind: KIND_MSG,
         created_at: Math.floor(Date.now() / 1000),
         tags: [
           ["t", "ghostroom"],
-          ["r", currentRoom.code],
-          ["connect", accept ? "accept" : "deny"],
-          ["p", fromPk]
+          ["connect", "accept"],
+          ["p", fromPk],
+          ["r", code]
         ],
-        content
+        content: "GHOST_CONNECT_ACCEPT|" + code + "|" + secret
       }, sk);
-      try {
-        await Promise.any(pool.publish(RELAYS, event));
-      } catch (e) {
-        console.warn(e);
-      }
-      if (pendingRequests.size === 0) hideConnectBanner();
-      else {
-        const [nextPk, info] = pendingRequests.entries().next().value;
-        showConnectRequestBanner(nextPk, info.name);
-      }
-      addSystem(accept ? "You accepted a ghost." : "You denied a ghost.");
+      try { await Promise.any(pool.publish(RELAYS, event)); } catch (_) {}
+      hideAllConnectBanners();
+      await enterRoom(code, "normal", secret, true);
+      addSystem("Connection accepted. Sealed room created.");
     }
 
-    async function sendConnectRequest() {
-      if (!currentRoom || !sk || !pool) return;
+    async function sendConnectRequestTo(targetPk) {
+      if (!sk || !pool || !targetPk) return;
+      connectionState = "pending";
+      awaitingConnectFrom = targetPk;
       const event = finalizeEvent({
         kind: KIND_MSG,
         created_at: Math.floor(Date.now() / 1000),
         tags: [
           ["t", "ghostroom"],
-          ["r", currentRoom.code],
-          ["connect", "req"]
+          ["connect", "req"],
+          ["p", targetPk]
         ],
         content: "GHOST_CONNECT_REQ"
       }, sk);
       try {
         await Promise.any(pool.publish(RELAYS, event));
+        showPendingHomeStatus("Request sent. Waiting for accept/deny…");
       } catch (e) {
+        connectionState = "open";
+        awaitingConnectFrom = null;
+        $("homeStats").textContent = "Could not send connection request.";
         console.warn(e);
-        addSystem("Could not send connection request.");
       }
     }
 
@@ -2192,44 +2350,70 @@
     }
     setInterval(sweep, 3000);
 
-    // ── Find a Ghost (public rooms) ──────────────────────────
-    // Without a central index we can only probe recent events.
-    // We look for recent ghostroom events and pick a room that is active.
+    // ── Find a Ghost ─────────────────────────────────────────
+    // Prefer ghosts on HOME (presence). Never auto-enter their room.
+    // If only ROOM_ACTIVE ghosts are found, still only send a request —
+    // accepting must never kidnap them out of their room.
     async function findAGhost() {
-      if (!pool) return;
-      $("homeStats").textContent = "FINDING A ROOM…";
+      if (!pool || !sk) return;
+      if (ghostLifecycle !== "HOME") {
+        $("homeStats").textContent = "Leave your room first to find a ghost.";
+        return;
+      }
+      $("homeStats").textContent = "FINDING A GHOST…";
       try {
+        const since = Math.floor(Date.now() / 1000) - 90;
         const events = await pool.querySync(RELAYS, {
           kinds: [KIND_MSG],
           "#t": ["ghostroom"],
-          since: Math.floor(Date.now() / 1000) - 180,
-          limit: 30
+          since,
+          limit: 50
         });
-        const rooms = new Map();
+
+        const homeGhosts = new Map(); // pk → last ts
+        const busyGhosts = new Map();
+
         for (const ev of events) {
-          const r = ev.tags.find(t => t[0] === "r");
-          if (r && r[1] && r[1].startsWith("GHOST-")) {
-            const code = r[1];
-            if (!rooms.has(code)) rooms.set(code, new Set());
-            rooms.get(code).add(ev.pubkey);
+          if (ev.pubkey === pk) continue;
+          const presence = ev.tags.find(t => t[0] === "presence");
+          const roomTag = ev.tags.find(t => t[0] === "r");
+          if (presence && presence[1] === "home") {
+            const prev = homeGhosts.get(ev.pubkey) || 0;
+            if (ev.created_at >= prev) homeGhosts.set(ev.pubkey, ev.created_at);
+          } else if (roomTag && roomTag[1] && roomTag[1].startsWith("GHOST-")) {
+            // In a room — discoverable for a request only, not for auto-join
+            const prev = busyGhosts.get(ev.pubkey) || 0;
+            if (ev.created_at >= prev) busyGhosts.set(ev.pubkey, ev.created_at);
           }
         }
-        // Prefer rooms with 1–4 distinct recent ghosts
-        let candidates = [...rooms.entries()]
-          .filter(([, pks]) => pks.size >= 1 && pks.size <= 6)
-          .sort((a, b) => b[1].size - a[1].size);
-        if (candidates.length === 0) {
-          $("homeStats").textContent = "NO ACTIVE ROOMS FOUND. Create one?";
-          setTimeout(() => $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths", 3000);
+
+        // Prefer HOME ghosts (available)
+        let targetPk = null;
+        let targetState = "HOME";
+        if (homeGhosts.size > 0) {
+          targetPk = [...homeGhosts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+          targetState = "HOME";
+        } else if (busyGhosts.size > 0) {
+          targetPk = [...busyGhosts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+          targetState = "ROOM_ACTIVE";
+        }
+
+        if (!targetPk) {
+          $("homeStats").textContent = "NO GHOSTS FOUND. Try again shortly.";
+          setTimeout(() => {
+            $("homeStats").textContent = "NETWORK · " + RELAYS.length + " relay paths";
+          }, 3000);
           return;
         }
-        const [code, pks] = candidates[0];
-        $("homeStats").textContent = pks.size + " GHOST" + (pks.size > 1 ? "S" : "") + " DETECTED. REQUESTING…";
-        await new Promise(r => setTimeout(r, 700));
-        // Enter sealed — connection request required before chat unlocks
-        await enterRoom(code, "normal", "", false, { pendingConnect: true });
+
+        const label = coolName(targetPk);
+        $("homeStats").textContent = targetState === "HOME"
+          ? "Found " + label + " (available). Requesting…"
+          : "Found " + label + " (in a room). Requesting — they will not be moved…";
+        await new Promise(r => setTimeout(r, 600));
+        await sendConnectRequestTo(targetPk);
       } catch (e) {
-        $("homeStats").textContent = "SEARCH FAILED. Try creating a room.";
+        $("homeStats").textContent = "SEARCH FAILED. Try again.";
         console.warn(e);
       }
     }
@@ -2477,7 +2661,9 @@
     // ── Boot ─────────────────────────────────────────────────
     createIdentity();
     connectPool();
+    ensureConnectSub();
     runBirth();
+    // After birth lands on home, presence starts via showScreen("home")
 
     // Deep link: #r/GHOST-XXXX or #r/GHOST-XXXX/secret
     const hash = location.hash.slice(1);
