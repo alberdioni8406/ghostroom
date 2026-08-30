@@ -1331,16 +1331,16 @@
     let roomKey = null;      // CryptoKey for E2EE (AES-GCM)
     let healthyRelays = new Set();
     let debugMode = false;
-    let bchRoomTimer = null; // room lifetime interval
-    let myBchRole = "";      // temporary role for this session
-    // Connection lifecycle: HOME | ROOM_ACTIVE | CONNECTION_PENDING | CONNECTED
-    // (UI uses connectionState for request flow; ghostLifecycle tracks where the ghost is)
+    let bchRoomTimer = null;
+    let myBchRole = "";
     let ghostLifecycle = "HOME"; // HOME | ROOM_ACTIVE
     let connectionState = "open"; // open | pending | connected
-    let pendingRequests = new Map(); // pubkey → { name, id, ts }
-    let awaitingConnectFrom = null; // pubkey we requested
+    let pendingRequests = new Map();
+    let handledConnectIds = new Set();
+    let awaitingConnectFrom = null;
     let presenceTimer = null;
     let connectSub = null;
+    let connectPollTimer = null;
     let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // ── DOM ──────────────────────────────────────────────────
@@ -1932,6 +1932,13 @@
 
     async function handleConnectEvent(ev) {
       if (!ev || ev.pubkey === pk) return;
+      if (handledConnectIds.has(ev.id)) return;
+      handledConnectIds.add(ev.id);
+      // Bound the set
+      if (handledConnectIds.size > 500) {
+        handledConnectIds = new Set([...handledConnectIds].slice(-200));
+      }
+
       const tags = ev.tags || [];
       const connectTag = tags.find(t => t[0] === "connect");
       const action = connectTag ? connectTag[1] : null;
@@ -1941,19 +1948,13 @@
 
       // Incoming request aimed at us
       if (action === "req" || content.startsWith("GHOST_CONNECT_REQ")) {
-        // Resolve target from p-tag or content suffix GHOST_CONNECT_REQ|<pubkey>
         let aimedAt = targetPk;
         if (!aimedAt && content.startsWith("GHOST_CONNECT_REQ|")) {
           aimedAt = content.split("|")[1] || "";
         }
-        if (aimedAt && aimedAt !== pk) return;
-        // If no target specified, ignore (must be addressed)
-        if (!aimedAt) return;
+        if (!aimedAt || aimedAt !== pk) return;
         if (connectionState === "pending" && awaitingConnectFrom) return;
-        // Already showing this request
-        if (pendingRequests.has(ev.pubkey) && $("homeConnectBanner")?.classList.contains("visible")) {
-          return;
-        }
+        if (pendingRequests.has(ev.pubkey)) return;
         const name = coolName(ev.pubkey);
         pendingRequests.set(ev.pubkey, { name, id: ev.id, ts: ev.created_at });
         showConnectRequestUI(ev.pubkey, name);
@@ -2103,14 +2104,13 @@
           showConnectRequestUI(nextPk, info.name);
         }
         if (currentRoom) addSystem("You denied a ghost.");
-        else $("homeStats").textContent = "Request denied.";
+        else if ($("homeStats")) $("homeStats").textContent = "Request denied.";
         return;
       }
 
-      // ACCEPT — never force-leave current room
+      // ACCEPT while already in a room: stay put, do not leave Room X
+      // Create a fresh sealed room for the requester; recipient is not moved.
       if (ghostLifecycle === "ROOM_ACTIVE" && currentRoom) {
-        // Stay in Room X. Tell requester we accepted but are busy.
-        // Also offer a fresh sealed room they can wait in — we are not moved.
         const code = randomCode();
         const secret = makeSecret();
         const event = finalizeEvent({
@@ -2125,18 +2125,17 @@
           content: "GHOST_CONNECT_ACCEPT|" + code + "|" + secret
         }, sk);
         try { await Promise.any(pool.publish(RELAYS, event)); } catch (_) {}
-        hideAllConnectBanners();
-        addSystem("Accepted. You stay in this room. They received a sealed invite — join later if you want.");
-        // Optional: stash invite for the recipient to copy later
+        if (pendingRequests.size === 0) hideAllConnectBanners();
+        addSystem("Accepted. You stay in this room. They received a sealed invite.");
         try {
           const link = location.origin + location.pathname + "#r/" + code + "/" + secret;
           await copyText(link);
-          addSystem("Invite for them also copied to your clipboard.");
+          addSystem("Invite copied — share or join later if you want.");
         } catch (_) {}
         return;
       }
 
-      // HOME — create a new sealed room and invite requester; both can meet
+      // Accept on HOME: create a new sealed room for both ghosts
       const code = randomCode();
       const secret = makeSecret();
       const event = finalizeEvent({
