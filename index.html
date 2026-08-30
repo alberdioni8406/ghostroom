@@ -1359,15 +1359,11 @@
       if (name === "home") {
         ghostLifecycle = "HOME";
         startHomePresence();
-        startConnectPoll();
-        ensureConnectSub();
       } else if (name === "room") {
         ghostLifecycle = "ROOM_ACTIVE";
         stopHomePresence();
-        stopConnectPoll();
       } else {
         stopHomePresence();
-        stopConnectPoll();
       }
     }
 
@@ -1868,66 +1864,17 @@
     }
 
     function ensureConnectSub() {
-      if (!pool || !pk) return;
-      // Close old sub if identity/pool changed
-      if (connectSub) {
-        try { connectSub.close(); } catch (_) {}
-        connectSub = null;
-      }
-      // #p is widely indexed on relays; #connect is not. Filter connect in handler.
-      connectSub = pool.subscribeMany(RELAYS, [
-        {
-          kinds: [KIND_MSG],
-          "#t": ["ghostroom"],
-          "#p": [pk],
-          since: Math.floor(Date.now() / 1000) - 180,
-          limit: 50
-        },
-        {
-          kinds: [KIND_MSG],
-          "#t": ["ghostroom"],
-          since: Math.floor(Date.now() / 1000) - 60,
-          limit: 30
-        }
-      ], {
-        onevent(ev) {
-          const raw = ev.content || "";
-          const isConnect = raw.startsWith("GHOST_CONNECT_") ||
-            (ev.tags && ev.tags.some(t => t[0] === "connect"));
-          if (isConnect) handleConnectEvent(ev);
-        }
+      if (!pool || connectSub) return;
+      // Listen for connection protocol aimed at anyone (filter in handler)
+      connectSub = pool.subscribeMany(RELAYS, [{
+        kinds: [KIND_MSG],
+        "#t": ["ghostroom"],
+        "#connect": ["req", "accept", "deny"],
+        since: Math.floor(Date.now() / 1000) - 120,
+        limit: 40
+      }], {
+        onevent(ev) { handleConnectEvent(ev); }
       });
-    }
-
-    // Poll while on HOME so a request is not missed if the live sub lagged
-    let connectPollTimer = null;
-    function startConnectPoll() {
-      stopConnectPoll();
-      const tick = async () => {
-        if (!pool || !pk || ghostLifecycle !== "HOME") return;
-        try {
-          const since = Math.floor(Date.now() / 1000) - 180;
-          const filters = [
-            { kinds: [KIND_MSG], "#t": ["ghostroom"], "#p": [pk], since, limit: 25 },
-            { kinds: [KIND_MSG], "#t": ["ghostroom"], since: Math.floor(Date.now() / 1000) - 90, limit: 40 }
-          ];
-          for (const filter of filters) {
-            let events = [];
-            try { events = await pool.querySync(RELAYS, filter); } catch (_) { continue; }
-            for (const ev of events || []) {
-              const raw = ev.content || "";
-              if (raw.startsWith("GHOST_CONNECT_") || (ev.tags && ev.tags.some(t => t[0] === "connect"))) {
-                await handleConnectEvent(ev);
-              }
-            }
-          }
-        } catch (_) {}
-      };
-      tick();
-      connectPollTimer = setInterval(tick, 3500);
-    }
-    function stopConnectPoll() {
-      if (connectPollTimer) { clearInterval(connectPollTimer); connectPollTimer = null; }
     }
 
     async function handleConnectEvent(ev) {
@@ -1939,21 +1886,10 @@
       const targetPk = pTag ? pTag[1] : null;
       const content = ev.content || "";
 
-      // Incoming request aimed at us
+      // Incoming request aimed at us (or open req while we're discoverable)
       if (action === "req" || content.startsWith("GHOST_CONNECT_REQ")) {
-        // Resolve target from p-tag or content suffix GHOST_CONNECT_REQ|<pubkey>
-        let aimedAt = targetPk;
-        if (!aimedAt && content.startsWith("GHOST_CONNECT_REQ|")) {
-          aimedAt = content.split("|")[1] || "";
-        }
-        if (aimedAt && aimedAt !== pk) return;
-        // If no target specified, ignore (must be addressed)
-        if (!aimedAt) return;
+        if (targetPk && targetPk !== pk) return;
         if (connectionState === "pending" && awaitingConnectFrom) return;
-        // Already showing this request
-        if (pendingRequests.has(ev.pubkey) && $("homeConnectBanner")?.classList.contains("visible")) {
-          return;
-        }
         const name = coolName(ev.pubkey);
         pendingRequests.set(ev.pubkey, { name, id: ev.id, ts: ev.created_at });
         showConnectRequestUI(ev.pubkey, name);
@@ -2018,7 +1954,6 @@
       const banner = inRoom ? $("connectBanner") : $("homeConnectBanner");
       if (!banner) return;
       banner.className = "connect-banner visible";
-      banner.style.display = "flex";
       banner.innerHTML = "";
       const text = document.createElement("div");
       text.textContent = inRoom
@@ -2039,9 +1974,6 @@
       actions.appendChild(den);
       banner.appendChild(text);
       banner.appendChild(actions);
-      if (!inRoom && $("homeStats")) {
-        $("homeStats").textContent = "👻 CONNECTION REQUEST from " + name;
-      }
     }
 
     function showPendingHomeStatus(msg) {
@@ -2058,7 +1990,6 @@
         const b = $(id);
         if (!b) return;
         b.className = "connect-banner";
-        b.style.display = "";
         b.innerHTML = "";
       });
     }
@@ -2158,7 +2089,6 @@
 
     async function sendConnectRequestTo(targetPk) {
       if (!sk || !pool || !targetPk) return;
-      ensureConnectSub();
       connectionState = "pending";
       awaitingConnectFrom = targetPk;
       const event = finalizeEvent({
@@ -2169,8 +2099,7 @@
           ["connect", "req"],
           ["p", targetPk]
         ],
-        // Include target in content so recipients can match even if tag filters lag
-        content: "GHOST_CONNECT_REQ|" + targetPk
+        content: "GHOST_CONNECT_REQ"
       }, sk);
       try {
         await Promise.any(pool.publish(RELAYS, event));
