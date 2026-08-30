@@ -251,6 +251,105 @@
       margin-top: 0.35rem;
     }
 
+    /* ── BCH Rooms (additive) ── */
+    :root { --bch: #0ac18e; --bch-dim: rgba(10, 193, 142, 0.15); --bch-border: rgba(10, 193, 142, 0.35); }
+    .btn-bch {
+      border-color: var(--bch) !important;
+      background: transparent !important;
+      color: var(--bch) !important;
+    }
+    .btn-bch:hover {
+      background: var(--bch-dim) !important;
+      box-shadow: 0 0 14px rgba(10, 193, 142, 0.25) !important;
+    }
+    .bch-panel {
+      display: none;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 0.2rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid var(--bch-border);
+    }
+    .bch-panel.visible { display: flex; }
+    .bch-panel h2 { color: var(--bch) !important; }
+    .bch-qr {
+      background: #fff;
+      border-radius: 8px;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .bch-qr canvas, .bch-qr img { max-width: 140px; height: auto; border-radius: 4px; }
+    .bch-meta {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .bch-countdown {
+      font-size: 0.75rem;
+      color: var(--bch);
+      text-align: center;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    .bch-role-tag {
+      font-size: 0.65rem;
+      color: var(--bch);
+      border: 1px solid var(--bch-border);
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      text-align: center;
+    }
+    .bch-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .bch-tools button {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.68rem !important;
+      padding: 0.45rem 0.4rem !important;
+      border-color: var(--bch-border) !important;
+      color: var(--bch) !important;
+      background: transparent !important;
+    }
+    .bch-tools button:hover {
+      background: var(--bch-dim) !important;
+      border-color: var(--bch) !important;
+    }
+    .mode-tag.bch { border-color: var(--bch-border); color: var(--bch); }
+    .bch-type-list .mode-opt.selected {
+      border-color: var(--bch);
+      background: var(--bch-dim);
+    }
+    .bch-field {
+      font-family: inherit;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: #fff;
+      padding: 0.55rem 0.75rem;
+      width: 100%;
+      outline: none;
+    }
+    .bch-field:focus { border-color: var(--bch); }
+    .bch-select-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .bch-select-row label {
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+    }
+    .bch-select-row select.bch-field { cursor: pointer; }
+
     /* —— Room —— */
     #screen-room {
       max-width: 920px;
@@ -757,6 +856,7 @@
       <div class="home-actions">
         <button class="btn" id="btnFindGhost">FIND A GHOST</button>
         <button class="btn secondary" id="btnCreateRoom">CREATE A ROOM</button>
+        <button class="btn secondary btn-bch" id="btnBchRooms">₿ BCH ROOMS</button>
         <button class="btn secondary" id="btnEnterCode">ENTER A ROOM</button>
       </div>
       <div class="home-stats" id="homeStats">NETWORK · connecting…</div>
@@ -817,9 +917,24 @@
         <div class="last-ghost" id="lastGhostBanner">YOU ARE THE LAST GHOST.<br>When you leave, the room fades.</div>
         <button class="secondary" id="btnCopyInvite">Copy invite link</button>
         <button class="secondary" id="btnLeaveRoom">Leave room</button>
-        <p class="expire-note" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
+        <p class="expire-note" id="expireNote" style="font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.4">
           Messages fade after 5 min.<br>Session ends when you leave.
         </p>
+
+        <!-- BCH Rooms panel (hidden unless in a BCH room) -->
+        <div class="bch-panel" id="bchPanel">
+          <h2>₿ BCH Room</h2>
+          <div class="bch-role-tag" id="bchRoleTag">Ghost</div>
+          <div class="bch-countdown" id="bchCountdown"></div>
+          <div class="bch-qr" id="bchQr" title="Scan to join or transfer ghost"></div>
+          <div class="bch-meta" id="bchMeta">QR · Ghost Transfer · Invite</div>
+          <div class="bch-tools" id="bchTools">
+            <button type="button" id="btnBchCopyAddr" title="Copy room tip address">Copy BCH</button>
+            <button type="button" id="btnBchRegenQr">Regen QR</button>
+            <button type="button" id="btnBchBurn" class="danger">Burn</button>
+          </div>
+          <div class="bch-meta" id="bchPresenceRoles"></div>
+        </div>
       </div>
 
       <div class="chat">
@@ -874,6 +989,64 @@
     </div>
   </div>
 
+  <!-- BCH ROOMS MODAL -->
+  <div class="overlay" id="bchOverlay" role="dialog" aria-modal="true" aria-labelledby="bchTitle">
+    <div class="modal" style="max-width:360px">
+      <h3 id="bchTitle">₿ BCH ROOMS</h3>
+      <p style="font-size:0.7rem;color:var(--muted);line-height:1.5;margin:0">Meet. Build. Coordinate. Exchange. Disappear.</p>
+      <div class="mode-list bch-type-list" id="bchTypeList">
+        <label class="mode-opt selected"><input type="radio" name="bchType" value="hangout" checked /> <span>💬 BCH Hangout<span class="desc">Open temporary hangout</span></span></label>
+        <label class="mode-opt"><input type="radio" name="bchType" value="dev" /> <span>🛠 Dev Room<span class="desc">Chat · tasks · notes · code</span></span></label>
+        <label class="mode-opt"><input type="radio" name="bchType" value="meetup" /> <span>🤝 Meetup<span class="desc">Title · time · location · QR</span></span></label>
+        <label class="mode-opt"><input type="radio" name="bchType" value="merchant" /> <span>₿ Merchant Room<span class="desc">Tips · payment note · QR</span></span></label>
+        <label class="mode-opt"><input type="radio" name="bchType" value="private" /> <span>🔐 Private Room<span class="desc">Sealed · invite only</span></span></label>
+      </div>
+      <div class="bch-select-row">
+        <label for="bchRole">Temporary role (optional)</label>
+        <select id="bchRole" class="bch-field">
+          <option value="">Ghost</option>
+          <option value="Builder">Builder</option>
+          <option value="Developer">Developer</option>
+          <option value="Merchant">Merchant</option>
+          <option value="Researcher">Researcher</option>
+          <option value="User">User</option>
+        </select>
+      </div>
+      <div class="bch-select-row">
+        <label for="bchMsgLife">Message lifetime</label>
+        <select id="bchMsgLife" class="bch-field">
+          <option value="30">30 seconds</option>
+          <option value="300" selected>5 minutes</option>
+          <option value="1800">30 minutes</option>
+          <option value="7200">2 hours</option>
+          <option value="86400">24 hours</option>
+        </select>
+      </div>
+      <div class="bch-select-row">
+        <label for="bchRoomLife">Room lifetime</label>
+        <select id="bchRoomLife" class="bch-field">
+          <option value="0">Until last ghost leaves</option>
+          <option value="1800">30 minutes</option>
+          <option value="3600" selected>1 hour</option>
+          <option value="7200">2 hours</option>
+          <option value="86400">24 hours</option>
+        </select>
+      </div>
+      <div class="bch-select-row" id="bchMeetupFields" style="display:none;gap:0.5rem">
+        <label>Meetup title</label>
+        <input type="text" id="bchMeetupTitle" class="bch-field" placeholder="e.g. BCH builders meetup" maxlength="80" />
+        <label>When / where (optional)</label>
+        <input type="text" id="bchMeetupWhere" class="bch-field" placeholder="time · place" maxlength="120" />
+      </div>
+      <div class="bch-select-row">
+        <label for="bchTipAddr">Tip address (optional CashAddr)</label>
+        <input type="text" id="bchTipAddr" class="bch-field" placeholder="bitcoincash:q…" maxlength="80" spellcheck="false" />
+      </div>
+      <button class="btn" id="btnConfirmBch" style="border-color:var(--bch);background:var(--bch)">Create BCH Room</button>
+      <button class="btn secondary" id="btnCancelBch">Cancel</button>
+    </div>
+  </div>
+
   <!-- DEBUG -->
   <div id="debug" aria-hidden="true"></div>
 
@@ -884,6 +1057,7 @@
       finalizeEvent,
       SimplePool
     } from "https://esm.sh/nostr-tools@2.10.4";
+    import QRCode from "https://esm.sh/qrcode@1.5.4";
 
     // ═══════════════════════════════════════════════════════════
     // GHOST PROTOCOL v0.2 — Experimental ephemeral communication
@@ -891,11 +1065,20 @@
     const PROTOCOL = "Ghost Protocol v0.2";
     const KIND_MSG = 1;
     const KIND_META = 30078; // replaceable for room meta (experimental)
-    const EXPIRE_SEC = 5 * 60;
+    const EXPIRE_SEC_DEFAULT = 5 * 60;
+    let EXPIRE_SEC = EXPIRE_SEC_DEFAULT; // mutable for BCH message lifetime
     const TYPING_TTL = 2800;
     const PRESENCE_TTL = 45; // seconds without activity → consider inactive
     const MAX_MSG_LEN = 800;
     const RATE_LIMIT_MS = 900;
+    const BCH_FOUNDER_ADDR = "bitcoincash:qrlluw2ekm2zmp4qn52ashn4qt9xhhg405gcrzehu5";
+    const BCH_TYPE_LABELS = {
+      hangout: "💬 BCH Hangout",
+      dev: "🛠 Dev Room",
+      meetup: "🤝 Meetup",
+      merchant: "₿ Merchant",
+      private: "🔐 Private"
+    };
     const RELAYS = [
       "wss://relay.damus.io",
       "wss://nos.lol",
@@ -955,6 +1138,8 @@
     let roomKey = null;      // CryptoKey for E2EE (AES-GCM)
     let healthyRelays = new Set();
     let debugMode = false;
+    let bchRoomTimer = null; // room lifetime interval
+    let myBchRole = "";      // temporary role for this session
     let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // ── DOM ──────────────────────────────────────────────────
@@ -1151,10 +1336,12 @@
       const banner = $("lastGhostBanner");
       if (n === 1 && currentRoom) banner.classList.add("visible");
       else banner.classList.remove("visible");
+
+      updateBchPresenceRoles();
     }
 
     // ── Room lifecycle ───────────────────────────────────────
-    async function enterRoom(code, mode = "normal", secret = "", isCreator = false) {
+    async function enterRoom(code, mode = "normal", secret = "", isCreator = false, opts = null) {
       code = (code || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
       if (!code || code.length < 5) {
         console.warn("enterRoom: invalid code", code);
@@ -1163,13 +1350,18 @@
 
       leaveRoom(false);
 
+      const bch = opts && opts.bch ? opts.bch : null;
+      if (bch && bch.msgLifetime) EXPIRE_SEC = bch.msgLifetime;
+      else EXPIRE_SEC = EXPIRE_SEC_DEFAULT;
+
       currentRoom = {
         code,
         mode,
         secret: secret || "",
         createdAt: Date.now(),
         isCreator,
-        speakerPk: isCreator && mode === "broadcast" ? pk : null
+        speakerPk: isCreator && mode === "broadcast" ? pk : null,
+        bch: bch || null
       };
 
       try {
@@ -1188,10 +1380,19 @@
       touchPresence(pk);
 
       $("roomCodeDisplay").textContent = code;
-      $("modeTag").textContent = mode.toUpperCase();
+      const modeLabel = bch ? (BCH_TYPE_LABELS[bch.type] || "₿ BCH") : mode.toUpperCase();
+      $("modeTag").textContent = modeLabel;
+      $("modeTag").classList.toggle("bch", !!bch);
       $("ghostBadge").innerHTML = escapeHtml(ghostName) + '<div class="id">' + escapeHtml(ghostId) + "</div>";
       $("msgInput").disabled = false;
       $("btnSend").disabled = false;
+
+      const expNote = $("expireNote");
+      if (expNote) {
+        const mins = Math.round(EXPIRE_SEC / 60);
+        const lifeStr = EXPIRE_SEC < 60 ? EXPIRE_SEC + "s" : (mins >= 60 ? (mins / 60) + "h" : mins + " min");
+        expNote.innerHTML = "Messages fade after " + lifeStr + ".<br>Session ends when you leave.";
+      }
 
       // Safely reset messages without destroying the empty-state node
       const msgs = $("messages");
@@ -1203,25 +1404,114 @@
       }
 
       try {
-        history.replaceState(null, "", location.pathname + "#r/" + code + (secret ? "/" + secret : ""));
+        const hash = "#r/" + code + (secret ? "/" + secret : "") + (bch ? "?bch=" + encodeURIComponent(bch.type) : "");
+        history.replaceState(null, "", location.pathname + hash);
       } catch (_) {}
 
       showScreen("room");
       subscribeRoom(code);
       updatePresenceUI();
+      setupBchPanel(bch, isCreator);
       setTimeout(() => { try { $("msgInput").focus(); } catch (_) {} }, 120);
       scheduleWhisper();
       if (debugMode) updateDebug();
     }
 
+    // ── BCH Rooms helpers (additive) ─────────────────────────
+    function getInviteUrl() {
+      if (!currentRoom) return location.href;
+      return location.origin + location.pathname + "#r/" + currentRoom.code +
+        (currentRoom.secret ? "/" + currentRoom.secret : "");
+    }
+
+    async function renderBchQr(text) {
+      const box = $("bchQr");
+      if (!box) return;
+      box.innerHTML = "";
+      try {
+        const canvas = document.createElement("canvas");
+        await QRCode.toCanvas(canvas, text, {
+          width: 140,
+          margin: 1,
+          color: { dark: "#030306", light: "#ffffff" }
+        });
+        box.appendChild(canvas);
+      } catch (e) {
+        box.textContent = "QR unavailable";
+        console.warn(e);
+      }
+    }
+
+    function setupBchPanel(bch, isCreator) {
+      const panel = $("bchPanel");
+      if (!panel) return;
+      if (bchRoomTimer) { clearInterval(bchRoomTimer); bchRoomTimer = null; }
+
+      if (!bch) {
+        panel.classList.remove("visible");
+        return;
+      }
+
+      panel.classList.add("visible");
+      myBchRole = bch.role || "";
+      $("bchRoleTag").textContent = myBchRole ? myBchRole : "Ghost";
+      $("bchMeta").textContent = (BCH_TYPE_LABELS[bch.type] || "BCH") + " · sealed invite · QR transfer";
+
+      if (bch.meetupTitle) {
+        $("bchMeta").textContent = bch.meetupTitle + (bch.meetupWhere ? " · " + bch.meetupWhere : "");
+      }
+
+      renderBchQr(getInviteUrl());
+
+      // Room lifetime countdown
+      if (bch.roomLifetime && bch.roomLifetime > 0) {
+        const endsAt = Date.now() + bch.roomLifetime * 1000;
+        const tick = () => {
+          const left = Math.max(0, Math.floor((endsAt - Date.now()) / 1000));
+          const h = Math.floor(left / 3600);
+          const m = Math.floor((left % 3600) / 60);
+          const s = left % 60;
+          const pad = n => String(n).padStart(2, "0");
+          $("bchCountdown").textContent = h > 0
+            ? "ROOM · " + h + ":" + pad(m) + ":" + pad(s)
+            : "ROOM · " + pad(m) + ":" + pad(s);
+          if (left <= 0) {
+            clearInterval(bchRoomTimer);
+            bchRoomTimer = null;
+            addSystem("This BCH room has expired.");
+            leaveRoom(true);
+          }
+        };
+        tick();
+        bchRoomTimer = setInterval(tick, 1000);
+      } else {
+        $("bchCountdown").textContent = "ROOM · until last ghost leaves";
+      }
+
+      // Creator-only tools
+      $("btnBchBurn").style.display = isCreator ? "" : "none";
+      $("btnBchRegenQr").style.display = isCreator ? "" : "";
+    }
+
+    function updateBchPresenceRoles() {
+      const el = $("bchPresenceRoles");
+      if (!el || !currentRoom || !currentRoom.bch) return;
+      const n = getActiveGhosts().length;
+      el.textContent = "👻 " + n + " ghost" + (n === 1 ? "" : "s") +
+        (myBchRole ? " · you: " + myBchRole : "");
+    }
+
     function leaveRoom(showDeath = true) {
       if (sub) { try { sub.close(); } catch {} sub = null; }
+      if (bchRoomTimer) { clearInterval(bchRoomTimer); bchRoomTimer = null; }
       const stats = {
         duration: sessionStart ? Math.floor((Date.now() - sessionStart) / 1000) : 0,
         messages: messagesSent
       };
       currentRoom = null;
       roomKey = null;
+      myBchRole = "";
+      EXPIRE_SEC = EXPIRE_SEC_DEFAULT;
       messageStore = [];
       messageEls.clear();
       presenceMap.clear();
@@ -1230,6 +1520,10 @@
       $("msgInput").disabled = true;
       $("btnSend").disabled = true;
       $("typingIndicator").classList.remove("visible");
+      const bchPanel = $("bchPanel");
+      if (bchPanel) bchPanel.classList.remove("visible");
+      const modeTag = $("modeTag");
+      if (modeTag) modeTag.classList.remove("bch");
       history.replaceState(null, "", location.pathname);
 
       if (showDeath) {
@@ -1585,6 +1879,76 @@
     $("btnCreateRoom").onclick = () => {
       $("createOverlay").classList.add("active");
     };
+
+    // BCH Rooms
+    $("btnBchRooms").onclick = () => {
+      $("bchOverlay").classList.add("active");
+    };
+    $("btnCancelBch").onclick = () => $("bchOverlay").classList.remove("active");
+    document.querySelectorAll("#bchTypeList .mode-opt").forEach(lab => {
+      lab.onclick = () => {
+        document.querySelectorAll("#bchTypeList .mode-opt").forEach(l => l.classList.remove("selected"));
+        lab.classList.add("selected");
+        lab.querySelector("input").checked = true;
+        const v = lab.querySelector("input").value;
+        $("bchMeetupFields").style.display = v === "meetup" ? "flex" : "none";
+      };
+    });
+    $("btnConfirmBch").onclick = async () => {
+      const type = document.querySelector('input[name="bchType"]:checked')?.value || "hangout";
+      const role = $("bchRole").value || "";
+      const msgLife = parseInt($("bchMsgLife").value, 10) || 300;
+      const roomLife = parseInt($("bchRoomLife").value, 10) || 0;
+      const tipAddr = ($("bchTipAddr").value || "").trim();
+      const meetupTitle = ($("bchMeetupTitle").value || "").trim();
+      const meetupWhere = ($("bchMeetupWhere").value || "").trim();
+      $("bchOverlay").classList.remove("active");
+
+      const code = randomCode();
+      let secret = "";
+      try {
+        secret = Array.from(crypto.getRandomValues(new Uint8Array(5)))
+          .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+      } catch (_) {
+        secret = Math.random().toString(36).slice(2, 10);
+      }
+
+      const bch = {
+        type,
+        role,
+        msgLifetime: msgLife,
+        roomLifetime: roomLife,
+        tipAddr: tipAddr || BCH_FOUNDER_ADDR,
+        meetupTitle,
+        meetupWhere
+      };
+
+      try {
+        await enterRoom(code, "bch-" + type, secret, true, { bch });
+        if (meetupTitle) addSystem("Meetup: " + meetupTitle + (meetupWhere ? " · " + meetupWhere : ""));
+        if (type === "dev") addSystem("Dev room · CHAT · keep tasks & notes in-message · temporary");
+        if (type === "merchant") addSystem("Merchant room · tip address ready · no wallet required");
+      } catch (err) {
+        console.error(err);
+        showScreen("home");
+        $("homeStats").textContent = "Could not open BCH room.";
+      }
+    };
+
+    $("btnBchCopyAddr").onclick = async () => {
+      const addr = (currentRoom && currentRoom.bch && currentRoom.bch.tipAddr) || BCH_FOUNDER_ADDR;
+      await copyText(addr);
+      $("btnBchCopyAddr").textContent = "Copied";
+      setTimeout(() => { $("btnBchCopyAddr").textContent = "Copy BCH"; }, 1500);
+    };
+    $("btnBchRegenQr").onclick = () => {
+      if (currentRoom) renderBchQr(getInviteUrl());
+    };
+    $("btnBchBurn").onclick = () => {
+      if (!currentRoom || !currentRoom.isCreator) return;
+      addSystem("Room burned by the keeper.");
+      leaveRoom(true);
+    };
     $("btnCancelCreate").onclick = () => $("createOverlay").classList.remove("active");
     $("btnConfirmCreate").onclick = async () => {
       const mode = document.querySelector('input[name="mode"]:checked')?.value || "normal";
@@ -1749,6 +2113,8 @@
       if (e.key === "Escape") {
         $("createOverlay").classList.remove("active");
         $("joinOverlay").classList.remove("active");
+        const bchO = $("bchOverlay");
+        if (bchO) bchO.classList.remove("active");
       }
     });
   </script>
