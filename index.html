@@ -482,24 +482,39 @@
     @media (min-width: 780px) {
       .room-body { grid-template-columns: 230px 1fr; }
     }
-    /* Mobile: stack panel + chat; keep chat/compose in remaining viewport */
+    /* Mobile: stack panel + chat; give chat more room (comfortable compose) */
     @media (max-width: 779px) {
       .room-body {
         display: flex;
         flex-direction: column;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        padding: 0.55rem;
+        gap: 0.55rem;
       }
       .room-body > .panel {
         flex: 0 0 auto;
-        max-height: 38dvh;
+        max-height: 28dvh;
         overflow-y: auto;
+        padding: 0.75rem;
+        gap: 0.55rem;
       }
       .room-body > .chat {
         flex: 1 1 auto;
-        min-height: 220px;
+        min-height: min(58dvh, 520px);
         height: auto !important;
         max-height: none !important;
+      }
+      .compose {
+        padding: 0.7rem 0.75rem;
+      }
+      .compose input {
+        height: 48px;
+        font-size: 16px; /* prevents iOS zoom */
+      }
+      .compose button {
+        height: 48px;
+        min-width: 72px;
       }
     }
 
@@ -750,6 +765,44 @@
       position: relative;
       z-index: 5;
     }
+
+    /* Connection request banner */
+    .connect-banner {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(139, 108, 255, 0.08);
+      font-size: 0.75rem;
+      color: var(--ghost);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .connect-banner.visible { display: flex; }
+    .connect-banner.pending { border-color: rgba(232, 184, 74, 0.35); background: rgba(232, 184, 74, 0.08); color: var(--warn); }
+    .connect-banner .connect-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .connect-banner button {
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    .connect-banner button.deny {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .connect-banner button.deny:hover { border-color: var(--danger); color: var(--danger); }
     .compose input {
       flex: 1;
       min-width: 0;
@@ -1065,6 +1118,7 @@
       </div>
 
       <div class="chat">
+        <div class="connect-banner" id="connectBanner" role="status" aria-live="polite"></div>
         <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions">
           <div class="empty" id="emptyState">
             <div class="big">◈</div>
@@ -1278,6 +1332,8 @@
     let debugMode = false;
     let bchRoomTimer = null; // room lifetime interval
     let myBchRole = "";      // temporary role for this session
+    let connectionState = "open"; // open | pending | connected
+    let pendingRequests = new Map(); // pubkey → { name, id, ts }
     let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // ── DOM ──────────────────────────────────────────────────
@@ -1492,6 +1548,8 @@
       if (bch && bch.msgLifetime) EXPIRE_SEC = bch.msgLifetime;
       else EXPIRE_SEC = EXPIRE_SEC_DEFAULT;
 
+      const pendingConnect = !!(opts && opts.pendingConnect);
+
       currentRoom = {
         code,
         mode,
@@ -1501,6 +1559,10 @@
         speakerPk: isCreator && mode === "broadcast" ? pk : null,
         bch: bch || null
       };
+
+      connectionState = pendingConnect ? "pending" : "open";
+      pendingRequests.clear();
+      hideConnectBanner();
 
       try {
         roomKey = await deriveRoomKey(code, secret || "");
@@ -1522,8 +1584,14 @@
       $("modeTag").textContent = modeLabel;
       $("modeTag").classList.toggle("bch", !!bch);
       $("ghostBadge").innerHTML = escapeHtml(ghostName) + '<div class="id">' + escapeHtml(ghostId) + "</div>";
-      $("msgInput").disabled = false;
-      $("btnSend").disabled = false;
+      if (pendingConnect) {
+        $("msgInput").disabled = true;
+        $("btnSend").disabled = true;
+        showPendingBanner();
+      } else {
+        $("msgInput").disabled = false;
+        $("btnSend").disabled = false;
+      }
 
       const expNote = $("expireNote");
       if (expNote) {
@@ -1550,7 +1618,12 @@
       subscribeRoom(code);
       updatePresenceUI();
       setupBchPanel(bch, isCreator);
-      setTimeout(() => { try { $("msgInput").focus(); } catch (_) {} }, 120);
+      if (pendingConnect) {
+        setTimeout(() => sendConnectRequest(), 400);
+        addSystem("Waiting for connection… messages stay sealed until accepted.");
+      } else {
+        setTimeout(() => { try { $("msgInput").focus(); } catch (_) {} }, 120);
+      }
       scheduleWhisper();
       if (debugMode) updateDebug();
     }
@@ -1649,6 +1722,9 @@
       currentRoom = null;
       roomKey = null;
       myBchRole = "";
+      connectionState = "open";
+      pendingRequests.clear();
+      hideConnectBanner();
       EXPIRE_SEC = EXPIRE_SEC_DEFAULT;
       messageStore = [];
       messageEls.clear();
@@ -1698,14 +1774,29 @@
       // Typing
       if (ev.content === "…" || (ev.tags.some(t => t[0] === "typing"))) {
         if (ev.pubkey === pk || myTypingIds.has(ev.id)) return;
+        if (connectionState === "pending") return;
         showTyping();
         touchPresence(ev.pubkey);
         updatePresenceUI();
         return;
       }
 
+      // Connection protocol (plaintext control messages)
+      const raw = ev.content || "";
+      if (raw.startsWith("GHOST_CONNECT_") || ev.tags.some(t => t[0] === "connect")) {
+        await handleConnectEvent(ev);
+        return;
+      }
+
       if (seen.has(ev.id) || isExpired(ev.created_at)) return;
       seen.add(ev.id);
+
+      // Pending joiners cannot read chat until accepted
+      if (connectionState === "pending") {
+        touchPresence(ev.pubkey);
+        updatePresenceUI();
+        return;
+      }
 
       // Decrypt if needed
       let content = ev.content;
@@ -1721,6 +1812,146 @@
       touchPresence(ev.pubkey);
       updatePresenceUI();
       renderAll();
+    }
+
+    async function handleConnectEvent(ev) {
+      if (!currentRoom || ev.pubkey === pk) return;
+      const tags = ev.tags || [];
+      const connectTag = tags.find(t => t[0] === "connect");
+      const action = connectTag ? connectTag[1] : null;
+      const pTag = tags.find(t => t[0] === "p");
+      const targetPk = pTag ? pTag[1] : null;
+      const content = ev.content || "";
+
+      // Incoming request (we are already in the room)
+      if (action === "req" || content === "GHOST_CONNECT_REQ") {
+        if (connectionState === "pending") return; // seekers don't handle other reqs
+        const name = coolName(ev.pubkey);
+        pendingRequests.set(ev.pubkey, { name, id: ev.id, ts: ev.created_at });
+        showConnectRequestBanner(ev.pubkey, name);
+        touchPresence(ev.pubkey);
+        updatePresenceUI();
+        return;
+      }
+
+      // Accept aimed at us
+      if ((action === "accept" || content.startsWith("GHOST_CONNECT_ACCEPT")) && targetPk === pk) {
+        let secret = currentRoom.secret || "";
+        if (content.startsWith("GHOST_CONNECT_ACCEPT|")) {
+          secret = content.slice("GHOST_CONNECT_ACCEPT|".length) || secret;
+        }
+        if (secret) {
+          currentRoom.secret = secret;
+          try {
+            roomKey = await deriveRoomKey(currentRoom.code, secret);
+          } catch (_) {}
+        }
+        connectionState = "connected";
+        pendingRequests.clear();
+        hideConnectBanner();
+        $("msgInput").disabled = false;
+        $("btnSend").disabled = false;
+        addSystem("Connection accepted. You are in.");
+        // Re-subscribe isn't needed; re-render will decrypt future msgs. Pull isn't available — user sees new msgs.
+        return;
+      }
+
+      // Deny aimed at us
+      if ((action === "deny" || content === "GHOST_CONNECT_DENY") && targetPk === pk) {
+        connectionState = "open";
+        hideConnectBanner();
+        addSystem("Connection denied. Returning to the void…");
+        setTimeout(() => leaveRoom(true), 1200);
+        return;
+      }
+    }
+
+    function showConnectRequestBanner(fromPk, name) {
+      const banner = $("connectBanner");
+      if (!banner) return;
+      banner.className = "connect-banner visible";
+      banner.innerHTML = "";
+      const text = document.createElement("div");
+      text.textContent = "👻 " + name + " wants to connect.";
+      const actions = document.createElement("div");
+      actions.className = "connect-actions";
+      const acc = document.createElement("button");
+      acc.type = "button";
+      acc.textContent = "Accept";
+      acc.onclick = () => respondConnect(fromPk, true);
+      const den = document.createElement("button");
+      den.type = "button";
+      den.className = "deny";
+      den.textContent = "Deny";
+      den.onclick = () => respondConnect(fromPk, false);
+      actions.appendChild(acc);
+      actions.appendChild(den);
+      banner.appendChild(text);
+      banner.appendChild(actions);
+    }
+
+    function showPendingBanner() {
+      const banner = $("connectBanner");
+      if (!banner) return;
+      banner.className = "connect-banner visible pending";
+      banner.textContent = "Connection requested. Waiting for a ghost to accept…";
+    }
+
+    function hideConnectBanner() {
+      const banner = $("connectBanner");
+      if (!banner) return;
+      banner.className = "connect-banner";
+      banner.innerHTML = "";
+    }
+
+    async function respondConnect(fromPk, accept) {
+      if (!currentRoom || !sk || !pool) return;
+      pendingRequests.delete(fromPk);
+      const content = accept
+        ? ("GHOST_CONNECT_ACCEPT|" + (currentRoom.secret || ""))
+        : "GHOST_CONNECT_DENY";
+      const event = finalizeEvent({
+        kind: KIND_MSG,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ["t", "ghostroom"],
+          ["r", currentRoom.code],
+          ["connect", accept ? "accept" : "deny"],
+          ["p", fromPk]
+        ],
+        content
+      }, sk);
+      try {
+        await Promise.any(pool.publish(RELAYS, event));
+      } catch (e) {
+        console.warn(e);
+      }
+      if (pendingRequests.size === 0) hideConnectBanner();
+      else {
+        const [nextPk, info] = pendingRequests.entries().next().value;
+        showConnectRequestBanner(nextPk, info.name);
+      }
+      addSystem(accept ? "You accepted a ghost." : "You denied a ghost.");
+    }
+
+    async function sendConnectRequest() {
+      if (!currentRoom || !sk || !pool) return;
+      const event = finalizeEvent({
+        kind: KIND_MSG,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+          ["t", "ghostroom"],
+          ["r", currentRoom.code],
+          ["connect", "req"]
+        ],
+        content: "GHOST_CONNECT_REQ"
+      }, sk);
+      try {
+        await Promise.any(pool.publish(RELAYS, event));
+      } catch (e) {
+        console.warn(e);
+        addSystem("Could not send connection request.");
+      }
     }
 
     function showTyping() {
@@ -1753,6 +1984,11 @@
       if (!currentRoom || !sk) return;
       text = text.trim();
       if (!text) return;
+
+      if (connectionState === "pending") {
+        addSystem("Still waiting for connection. Chat unlocks when a ghost accepts.");
+        return;
+      }
 
       // Rate limit
       const now = Date.now();
@@ -1988,9 +2224,10 @@
           return;
         }
         const [code, pks] = candidates[0];
-        $("homeStats").textContent = pks.size + " GHOST" + (pks.size > 1 ? "S" : "") + " DETECTED. ENTERING…";
+        $("homeStats").textContent = pks.size + " GHOST" + (pks.size > 1 ? "S" : "") + " DETECTED. REQUESTING…";
         await new Promise(r => setTimeout(r, 700));
-        enterRoom(code, "normal", "", false);
+        // Enter sealed — connection request required before chat unlocks
+        await enterRoom(code, "normal", "", false, { pendingConnect: true });
       } catch (e) {
         $("homeStats").textContent = "SEARCH FAILED. Try creating a room.";
         console.warn(e);
